@@ -46,11 +46,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
     checkAuthStatus();
   }
 
-  Future<void> loginUser (String email, String password) async {
+  Future<void> loginUser (String username, String password) async {
     await Future.delayed(const Duration(milliseconds: 500));
 
     try {
-      final user = await authRepository.login(email, password);
+      final user = await authRepository.login(username, password);
       _setLoggedUser(user);
 
     } on WrongCredentials {
@@ -60,18 +60,20 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       logout('An error occurred');
     }
-
-    // final user = await authRepository.login(email, password);
-    // state = state.copyWith(user: user, authStatus: AuthStatus.authenticated);
   }
 
-  void registerUser (String email, String password, String fullName) async {
-
+  Future<void> registerUser(String username, String password, List<String> roles) async {
+    try {
+      final user = await authRepository.register(username, password, roles);
+      _setLoggedUser(user);
+    } catch (e) {
+      logout('Registration failed');
+    }
   }
 
   void checkAuthStatus() async {
     final token = await keyValueStorageService.getValue<String>('token');
-    if( token == null ) return logout();
+    if (token == null) return logout();
 
     try {
       final user = await authRepository.checkAuthStatus(token);
@@ -80,7 +82,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     } catch (e) {
       logout();
     }
-
   }
 
   void _setLoggedUser(User user) async {
@@ -94,7 +95,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
     );
   }
 
-  Future<void> logout ([String? errorMessage]) async {
+  Future<void> logout([String? errorMessage]) async {
     // ? Eliminando el token físicamente
     await keyValueStorageService.removeKey('token');
 
@@ -107,9 +108,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 }
 
 final authProvider = StateNotifierProvider<AuthNotifier, AuthState>((ref) {
-
   final authRepository = AuthRepositoryImpl();
-
   final keyValueStorageService = KeyValueStorageServiceImpl();
 
   return AuthNotifier(

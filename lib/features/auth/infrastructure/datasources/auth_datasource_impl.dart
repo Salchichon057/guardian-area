@@ -3,9 +3,7 @@ import 'package:guardian_area/config/consts/environmets.dart';
 import 'package:guardian_area/features/auth/domain/domain.dart';
 import 'package:guardian_area/features/auth/infrastructure/infrastructure.dart';
 
-
 class AuthDatasourceImpl extends AuthDatasource {
-  // Acá se implementan los procesos de la autenticación
   final dio = Dio(BaseOptions(baseUrl: Environment.apiUrl));
 
   @override
@@ -15,11 +13,10 @@ class AuthDatasourceImpl extends AuthDatasource {
           options: Options(headers: {'Authorization': 'Bearer $token'}));
 
       final user = UserMapper.userJsonToEntity(response.data);
-
       return user;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        throw CustomError('Token incorrecto');
+        throw CustomError('Invalid token');
       }
       throw Exception();
     } catch (e) {
@@ -28,20 +25,21 @@ class AuthDatasourceImpl extends AuthDatasource {
   }
 
   @override
-  Future<User> login(String email, String password) async {
+  Future<User> login(String username, String password) async {
     try {
-      final response = await dio
-          .post('/auth/login', data: {'email': email, 'password': password});
+      final response = await dio.post(
+        '/api/v1/authentication/sign-in',
+        data: {'username': username, 'password': password},
+      );
 
       final user = UserMapper.userJsonToEntity(response.data);
       return user;
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
-        throw CustomError(
-            e.response?.data['message'] ?? 'Credenciales incorrectas');
+        throw CustomError('Invalid credentials');
       }
       if (e.type == DioExceptionType.connectionTimeout) {
-        throw CustomError('Revisar conexión a internet');
+        throw CustomError('Check your internet connection');
       }
       throw Exception();
     } catch (e) {
@@ -50,8 +48,21 @@ class AuthDatasourceImpl extends AuthDatasource {
   }
 
   @override
-  Future<User> register(String email, String password, String fullName) {
-    // TODO: implement register
-    throw UnimplementedError();
+  Future<User> register(String username, String password, List<String> roles) async {
+    try {
+      final response = await dio.post(
+        '/api/v1/authentication/sign-up',
+        data: {
+          'username': username,
+          'password': password,
+          'roles': roles,
+        },
+      );
+
+      final user = UserMapper.userJsonToEntity(response.data);
+      return user;
+    } catch (e) {
+      throw Exception('Registration failed');
+    }
   }
 }
