@@ -16,7 +16,6 @@ dependencies:
   flutter_riverpod: ^2.6.1
   formz: ^0.8.0
   go_router: ^14.3.0
-  google_fonts: ^6.2.1
   shared_preferences: ^2.3.2
 
 dev_dependencies:
@@ -29,5 +28,4 @@ flutter:
 
   assets:
     - assets/images/
-    - google_fonts/roboto/
     - .env
