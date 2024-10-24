@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:guardian_area/config/config.dart';
 
 void main() async {
+
+  await Environment.initEnvironment();
 
   runApp(const MyApp());
 }
