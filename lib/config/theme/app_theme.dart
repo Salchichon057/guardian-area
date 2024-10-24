@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 const colorSeed = Color(0xFF08273A);
 const scaffoldBackgroundColor = Color(0xFFF8F7F7);
@@ -12,29 +11,33 @@ class AppTheme {
     colorSchemeSeed: colorSeed,
 
     ///* Texts
-    textTheme: TextTheme(
-      titleLarge: GoogleFonts.roboto()
-        .copyWith( fontSize: 40, fontWeight: FontWeight.bold ),
-      titleMedium: GoogleFonts.roboto()
-        .copyWith( fontSize: 30, fontWeight: FontWeight.bold ),
-      titleSmall: GoogleFonts.roboto()
-        .copyWith( fontSize: 20 )
+    textTheme: const TextTheme(
+      titleLarge: TextStyle(
+        fontSize: 40, fontWeight: FontWeight.bold, color: Colors.black
+      ),
+      titleMedium: TextStyle(
+        fontSize: 30, fontWeight: FontWeight.bold, color: Colors.black
+      ),
+      titleSmall: TextStyle(
+        fontSize: 20, color: Colors.black
+      ),
     ),
 
     ///* Scaffold Background Color
     scaffoldBackgroundColor: scaffoldBackgroundColor,
     
-
     ///* Buttons
     filledButtonTheme: FilledButtonThemeData(
       style: ButtonStyle(
-        textStyle: WidgetStatePropertyAll(
-          GoogleFonts.roboto()
-            .copyWith(fontWeight: FontWeight.w700)
-          )
-      )
+        textStyle: WidgetStateProperty.all(
+          const TextStyle(
+            fontWeight: FontWeight.w700,
+            fontSize: 16,
+          ),
+        ),
+        backgroundColor: WidgetStateProperty.all(colorSeed),
+        foregroundColor: WidgetStateProperty.all(Colors.white),
+      ),
     ),
-
   );
-
 }
