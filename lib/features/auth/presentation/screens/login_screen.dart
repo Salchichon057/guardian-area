@@ -9,18 +9,16 @@ class LoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => FocusManager.instance.primaryFocus?.unfocus(), // Ocultar teclado al hacer tap fuera
+      onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
         body: Stack(
           children: [
-            // Fondo de imagen
             Positioned.fill(
               child: Image.asset(
                 'assets/images/login_img.jpg',
                 fit: BoxFit.cover,
               ),
             ),
-            // * Contenido principal
             Center(
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
@@ -45,7 +43,7 @@ class LoginScreen extends StatelessWidget {
                       const Align(
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          "Accede a",
+                          "Sign in to",
                           style: TextStyle(
                               fontSize: 20,
                               color: Colors.black87,
@@ -72,13 +70,13 @@ class LoginScreen extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           const Text(
-                            "¿No tienes una cuenta?",
+                            "Don't have an account?",
                             style: TextStyle(color: Colors.black54),
                           ),
                           TextButton(
                             onPressed: () {},
                             child: const Text(
-                              'Regístrate Aquí',
+                              'Sign up here',
                               style: TextStyle(color: Colors.blue),
                             ),
                           ),
@@ -87,7 +85,7 @@ class LoginScreen extends StatelessWidget {
                       TextButton(
                         onPressed: () {},
                         child: const Text(
-                          '¿Olvidaste tu contraseña?',
+                          'Forgot your password?',
                           style: TextStyle(color: Colors.blue),
                         ),
                       ),
@@ -109,7 +107,7 @@ class _EmailInput extends ConsumerWidget {
     final loginForm = ref.watch(loginFormProvider);
 
     return CustomTextFormField(
-      label: 'Correo',
+      label: 'Email',
       keyboardType: TextInputType.emailAddress,
       onChanged: ref.read(loginFormProvider.notifier).onEmailChanged,
       errorMessage:
@@ -124,7 +122,7 @@ class _PasswordInput extends ConsumerWidget {
     final loginForm = ref.watch(loginFormProvider);
 
     return CustomTextFormField(
-      label: 'Contraseña',
+      label: 'Password',
       obscureText: true,
       onChanged: ref.read(loginFormProvider.notifier).onPasswordChanged,
       errorMessage:
@@ -141,7 +139,7 @@ class _LoginButton extends ConsumerWidget {
     return SizedBox(
       width: double.infinity,
       child: CustomFilledButton(
-        text: 'Ingresar',
+        text: 'Sign in',
         buttonColor: const Color(0xFF08273A),
         onPressed: loginForm.isPosting
             ? null
