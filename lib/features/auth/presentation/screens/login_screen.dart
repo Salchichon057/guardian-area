@@ -60,7 +60,7 @@ class LoginScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(height: 20),
-                      _EmailInput(),
+                      _UsernameInput(),
                       const SizedBox(height: 20),
                       _PasswordInput(),
                       const SizedBox(height: 30),
@@ -101,20 +101,21 @@ class LoginScreen extends StatelessWidget {
   }
 }
 
-class _EmailInput extends ConsumerWidget {
+class _UsernameInput extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final loginForm = ref.watch(loginFormProvider);
 
     return CustomTextFormField(
-      label: 'Email',
-      keyboardType: TextInputType.emailAddress,
-      onChanged: ref.read(loginFormProvider.notifier).onEmailChanged,
+      label: 'Username',
+      keyboardType: TextInputType.text,
+      onChanged: ref.read(loginFormProvider.notifier).onUsernameChanged,
       errorMessage:
-          loginForm.isFormPosted ? loginForm.email.errorMessage : null,
+          loginForm.isFormPosted ? loginForm.username.errorMessage : null,
     );
   }
 }
+
 
 class _PasswordInput extends ConsumerWidget {
   @override
