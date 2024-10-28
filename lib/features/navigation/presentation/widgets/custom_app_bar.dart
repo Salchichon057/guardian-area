@@ -28,7 +28,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
             children: [
               GestureDetector(
                 onTap: () {
-                  context.go('/devices'); // Navigate to devices screen
+                  context.go('/devices');
                 },
                 child: SvgPicture.asset(
                   'assets/images/mobile-solid.svg',
