@@ -15,15 +15,17 @@ class CustomBottomNavBar extends ConsumerWidget {
       currentIndex: navigationState.selectedIndex,
       onTap: (index) {
         navigationNotifier.updateIndex(index);
-        // Navega a la ruta correspondiente
+
         if (index == 0) context.go('/');
-        if (index == 1) context.go('/monitoring');
+        if (index == 1) context.go('/activities');
         if (index == 2) context.go('/profile');
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Monitoring'),
-        BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+        BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Activities'),
+        BottomNavigationBarItem(icon: Icon(Icons.chat), label: 'Chat'),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Vital signs'),
+        BottomNavigationBarItem(icon: Icon(Icons.map), label: 'Geofences'),
       ],
     );
   }
