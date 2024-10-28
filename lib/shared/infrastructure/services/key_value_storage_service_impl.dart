@@ -3,7 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class KeyValueStorageServiceImpl extends KeyValueStorageService {
   
-  Future getSharedPrefs() async {
+  Future<SharedPreferences> getSharedPrefs() async {
     return await SharedPreferences.getInstance();
   }
 
@@ -11,19 +11,37 @@ class KeyValueStorageServiceImpl extends KeyValueStorageService {
   Future<T?> getValue<T>(String key) async {
     final prefs = await getSharedPrefs();
 
-    switch (T) {
-      case const (int):
-        return prefs.getInt(key) as T?;
-      case const (double):
-        return prefs.getDouble(key) as T?;
-      case const (String):
-        return prefs.getString(key) as T?;
-      case const (bool):
-        return prefs.getBool(key) as T?;
-      case const (List):
-        return prefs.getStringList(key) as T?;
-      default:
-        throw UnimplementedError('Get not implemented for type $T');
+    if (T == int) {
+      return prefs.getInt(key) as T?;
+    } else if (T == double) {
+      return prefs.getDouble(key) as T?;
+    } else if (T == String) {
+      return prefs.getString(key) as T?;
+    } else if (T == bool) {
+      return prefs.getBool(key) as T?;
+    } else if (T == List<String>) {
+      return prefs.getStringList(key) as T?;
+    } else {
+      throw UnimplementedError('Get not implemented for type $T');
+    }
+  }
+
+  @override
+  Future<void> setKeyValue<T>(String key, T value) async {
+    final prefs = await getSharedPrefs();
+
+    if (value is int) {
+      await prefs.setInt(key, value);
+    } else if (value is double) {
+      await prefs.setDouble(key, value);
+    } else if (value is String) {
+      await prefs.setString(key, value);
+    } else if (value is bool) {
+      await prefs.setBool(key, value);
+    } else if (value is List<String>) {
+      await prefs.setStringList(key, value);
+    } else {
+      throw UnimplementedError('Set not implemented for type $T');
     }
   }
 
@@ -32,31 +50,4 @@ class KeyValueStorageServiceImpl extends KeyValueStorageService {
     final prefs = await getSharedPrefs();
     return await prefs.remove(key);
   }
-
-  @override
-  Future<void> setKeyValue<T>(String key, T value) async {
-    final prefs = await getSharedPrefs();
-
-    switch (T) {
-      case const (int):
-        await prefs.setInt(key, value as int);
-        break;
-      case const (double):
-        await prefs.setDouble(key, value as double);
-        break;
-      case const (String):
-        await prefs.setString(key, value as String);
-        break;
-      case const (bool):
-        await prefs.setBool(key, value as bool);
-        break;
-      case const (List):
-        await prefs.setStringList(key, value as List<String>);
-        break;
-      default:
-        throw UnimplementedError('Set not implemented for type $T');
-    }
-
-  }
-
 }
