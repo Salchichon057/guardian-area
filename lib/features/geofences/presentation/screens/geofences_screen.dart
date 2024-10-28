@@ -10,7 +10,7 @@ class GeofencesScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Devices Screen',
+            'Geofences Screen',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

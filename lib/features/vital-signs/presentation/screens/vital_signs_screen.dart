@@ -10,7 +10,7 @@ class VitalSignsScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Devices Screen',
+            'Vital Signs Screen',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,

@@ -10,7 +10,7 @@ class ChatScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Devices Screen',
+            'Chat Screen',
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.bold,
