@@ -13,7 +13,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
 
     // Datos de usuario
     final userName = authState.userProfile?.firstName ?? 'Usuario';
-    const userProfileImage = 'assets/images/default_profile_picture.jpg';
+    const userProfileImage = 'assets/images/no-image.jpg';
 
     return AppBar(
       backgroundColor: Colors.white,

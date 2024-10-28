@@ -55,7 +55,7 @@ class AuthDatasourceImpl extends AuthDatasource {
   Future<AuthenticatedUser> register(String username, String password, List<String> roles) async {
     try {
       final response = await dio.post(
-        '/api/v1/authentication/sign-up',
+        '/authentication/sign-up',
         data: {
           'username': username,
           'password': password,
@@ -75,9 +75,11 @@ class AuthDatasourceImpl extends AuthDatasource {
       if (token == null) throw Exception('Token not found');
 
       final response = await dio.get(
-        '/api/v1/users/$userId',
+        '/users/$userId',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
+
+      print(response);
       return UserProfileMapper.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to load user profile');
