@@ -2,41 +2,44 @@ import 'package:dio/dio.dart';
 import 'package:guardian_area/config/consts/environmets.dart';
 import 'package:guardian_area/features/auth/domain/domain.dart';
 import 'package:guardian_area/features/auth/infrastructure/infrastructure.dart';
+import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';
 
 class AuthDatasourceImpl extends AuthDatasource {
-  final dio = Dio(BaseOptions(baseUrl: Environment.apiUrl, headers: {
-    'Content-Type': 'application/json',
-    'Accept': 'application/json'
-  }));
+  final Dio dio = Dio(BaseOptions(
+    baseUrl: Environment.apiUrl,
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+  ));
+  final KeyValueStorageService storageService;
+
+  AuthDatasourceImpl({required this.storageService});
 
   @override
-  Future<User> checkAuthStatus(String token) async {
+  Future<AuthenticatedUser> checkAuthStatus(String token) async {
     try {
-      final response = await dio.get('/auth/check-status',
-          options: Options(headers: {'Authorization': 'Bearer $token'}));
-
-      final user = UserMapper.userJsonToEntity(response.data);
-      return user;
+      final response = await dio.get(
+        '/auth/check-status',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return UserMapper.userJsonToEntity(response.data);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         throw CustomError('Invalid token');
       }
-      throw Exception();
-    } catch (e) {
-      throw Exception();
+      throw Exception('Failed to check auth status');
     }
   }
 
   @override
-  Future<User> login(String username, String password) async {
+  Future<AuthenticatedUser> login(String username, String password) async {
     try {
       final response = await dio.post(
         '/authentication/sign-in',
         data: {'username': username, 'password': password},
       );
-
-      final user = UserMapper.userJsonToEntity(response.data);
-      return user;
+      return UserMapper.userJsonToEntity(response.data);
     } on DioException catch (e) {
       if (e.response?.statusCode == 401) {
         throw CustomError('Invalid credentials');
@@ -44,15 +47,12 @@ class AuthDatasourceImpl extends AuthDatasource {
       if (e.type == DioExceptionType.connectionTimeout) {
         throw CustomError('Check your internet connection');
       }
-      throw Exception();
-    } catch (e) {
-      throw Exception();
+      throw Exception('Failed to login');
     }
   }
 
   @override
-  Future<User> register(
-      String username, String password, List<String> roles) async {
+  Future<AuthenticatedUser> register(String username, String password, List<String> roles) async {
     try {
       final response = await dio.post(
         '/api/v1/authentication/sign-up',
@@ -62,11 +62,25 @@ class AuthDatasourceImpl extends AuthDatasource {
           'roles': roles,
         },
       );
-
-      final user = UserMapper.userJsonToEntity(response.data);
-      return user;
+      return UserMapper.userJsonToEntity(response.data);
     } catch (e) {
       throw Exception('Registration failed');
+    }
+  }
+
+  @override
+  Future<UserProfile> fetchUserProfile(int userId) async {
+    try {
+      final token = await storageService.getValue<String>('token');
+      if (token == null) throw Exception('Token not found');
+
+      final response = await dio.get(
+        '/api/v1/users/$userId',
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
+      );
+      return UserProfileMapper.fromJson(response.data);
+    } catch (e) {
+      throw Exception('Failed to load user profile');
     }
   }
 }

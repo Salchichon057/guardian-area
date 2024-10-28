@@ -1,9 +1,9 @@
-class User {
+class AuthenticatedUser {
   final int id;
   final String username;
   final String? token;
 
-  User({
+  AuthenticatedUser({
     required this.id,
     required this.username,
     this.token,
