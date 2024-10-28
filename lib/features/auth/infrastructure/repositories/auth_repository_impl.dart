@@ -1,0 +1,25 @@
+import 'package:guardian_area/features/auth/domain/domain.dart';
+import 'package:guardian_area/features/auth/infrastructure/datasources/auth_datasource_impl.dart';
+
+class AuthRepositoryImpl extends AuthRepository {
+  final AuthDatasource datasource;
+
+  AuthRepositoryImpl({AuthDatasource? datasource})
+      : datasource = datasource ?? AuthDatasourceImpl();
+
+  @override
+  Future<User> checkAuthStatus(String token) {
+    return datasource.checkAuthStatus(token);
+  }
+
+  @override
+  Future<User> login(String username, String password) {
+    return datasource.login(username, password);
+  }
+
+  @override
+  Future<User> register(String username, String password, List<String> roles) {
+    return datasource.register(username, password, roles);
+  }
+}
+
