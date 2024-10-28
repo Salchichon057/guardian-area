@@ -18,7 +18,10 @@ class CustomBottomNavBar extends ConsumerWidget {
 
         if (index == 0) context.go('/');
         if (index == 1) context.go('/activities');
-        if (index == 2) context.go('/profile');
+        if (index == 2) context.go('/chat');
+        if (index == 3) context.go('/vital-signs');
+        if (index == 4) context.go('/geofences');        
+
       },
       items: const [
         BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
