@@ -1,13 +1,31 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
 import 'package:guardian_area/features/auth/presentation/providers/providers.dart';
 import 'package:guardian_area/shared/widgets/widgets.dart';
 
-class LoginScreen extends StatelessWidget {
+class LoginScreen extends ConsumerWidget {
   const LoginScreen({super.key});
 
+  void showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        duration: const Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+
+    ref.listen(authProvider, (previous, current) {
+      if (current.errorMessage.isNotEmpty) {
+        showSnackBar(context, current.errorMessage);
+      }
+    });
+
     return GestureDetector(
       onTap: () => FocusManager.instance.primaryFocus?.unfocus(),
       child: Scaffold(
@@ -23,7 +41,8 @@ class LoginScreen extends StatelessWidget {
               child: SingleChildScrollView(
                 physics: const ClampingScrollPhysics(),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 30),
                   margin: const EdgeInsets.symmetric(horizontal: 20),
                   decoration: BoxDecoration(
                     color: Colors.white,
@@ -115,7 +134,6 @@ class _UsernameInput extends ConsumerWidget {
     );
   }
 }
-
 
 class _PasswordInput extends ConsumerWidget {
   @override

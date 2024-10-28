@@ -50,22 +50,24 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final authenticatedUser = await authRepository.login(username, password);
       _setLoggedUser(authenticatedUser);
 
-      final userProfile = await authRepository.fetchUserProfile(authenticatedUser.id);
+      final userProfile =
+          await authRepository.fetchUserProfile(authenticatedUser.id);
       state = state.copyWith(userProfile: userProfile);
-
     } catch (e) {
       logout('Login failed');
     }
   }
 
-  Future<void> registerUser(String username, String password, List<String> roles) async {
+  Future<void> registerUser(
+      String username, String password, List<String> roles) async {
     try {
-      final authenticatedUser = await authRepository.register(username, password, roles);
+      final authenticatedUser =
+          await authRepository.register(username, password, roles);
       _setLoggedUser(authenticatedUser);
 
-      final userProfile = await authRepository.fetchUserProfile(authenticatedUser.id);
+      final userProfile =
+          await authRepository.fetchUserProfile(authenticatedUser.id);
       state = state.copyWith(userProfile: userProfile);
-      
     } catch (e) {
       logout('Registration failed');
     }
@@ -79,9 +81,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
       final authenticatedUser = await authRepository.checkAuthStatus(token);
       _setLoggedUser(authenticatedUser);
 
-      final userProfile = await authRepository.fetchUserProfile(authenticatedUser.id);
+      final userProfile =
+          await authRepository.fetchUserProfile(authenticatedUser.id);
       state = state.copyWith(userProfile: userProfile);
-
     } catch (e) {
       logout('Session expired');
     }

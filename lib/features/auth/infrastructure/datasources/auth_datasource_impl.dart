@@ -79,7 +79,6 @@ class AuthDatasourceImpl extends AuthDatasource {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      print(response);
       return UserProfileMapper.fromJson(response.data);
     } catch (e) {
       throw Exception('Failed to load user profile');
