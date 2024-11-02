@@ -63,10 +63,11 @@ class LoginFormNotifier extends StateNotifier<LoginFormState> {
 
     state = state.copyWith(isPosting: true);
 
-    await loginUserCallback(state.username.value,
-        state.password.value);
+    await loginUserCallback(state.username.value, state.password.value);
 
-    state = state.copyWith(isPosting: false);
+    if (mounted) {
+      state = state.copyWith(isPosting: false);
+    }
   }
 
   void _touchAllFields() {
