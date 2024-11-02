@@ -78,7 +78,6 @@ class DevicesScreen extends ConsumerWidget {
                       return const Center(child: Text('No devices found'));
                     }
 
-                    // Usamos FutureBuilder para obtener el selectedDeviceId de manera asíncrona
                     return FutureBuilder<String?>(
                       future: ref
                           .read(deviceProvider(userId.toString()).notifier)
@@ -100,6 +99,8 @@ class DevicesScreen extends ConsumerWidget {
                               onTap: () {
                                 showSelectDeviceDialog(
                                     context, ref, device, userId.toString());
+
+                                // refresh de la página
                               },
                               child: DeviceCard(
                                 device: device,
@@ -147,7 +148,22 @@ class DevicesScreen extends ConsumerWidget {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
-        return SelectDeviceDialog(device: device, userId: userId);
+        return SelectDeviceDialog(
+          device: device,
+          userId: userId,
+          onConfirm: () async {
+            // Llamar al método de selección de dispositivo
+            await ref
+                .read(deviceProvider(userId).notifier)
+                .selectDevice(device);
+
+            // Refrescar la lista de dispositivos para actualizar la UI
+            ref.refresh(deviceProvider(userId));
+
+            // Cerrar el diálogo después de seleccionar el dispositivo
+            Navigator.of(dialogContext).pop();
+          },
+        );
       },
     );
   }
