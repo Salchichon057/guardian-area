@@ -4,7 +4,9 @@ class DeviceMapper {
   static Device fromJson(Map<String, dynamic> json) {
     return Device(
       guardianAreaDeviceRecordId: json['guardianAreaDeviceRecordId'] ?? '',
-      nickname: json['nickname'] ?? 'New Device',
+      nickname: json['nickname'] == '-' || json['nickname'] == null
+          ? 'New Device'
+          : json['nickname'],
       bearer: json['bearer'] ?? '',
       careMode: json['careMode'] ?? 'Not Configured',
       status: json['status'] ?? '',
