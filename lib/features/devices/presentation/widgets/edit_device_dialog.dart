@@ -1,16 +1,39 @@
 import 'package:flutter/material.dart';
+import 'package:guardian_area/features/devices/domain/entities/device.dart';
 
 class EditDeviceDialog extends StatefulWidget {
-  const EditDeviceDialog({super.key});
+  final Device device;
+
+  const EditDeviceDialog({super.key, required this.device});
 
   @override
   State<EditDeviceDialog> createState() => _EditDeviceDialogState();
 }
 
 class _EditDeviceDialogState extends State<EditDeviceDialog> {
-  final TextEditingController bearerController = TextEditingController();
-  final TextEditingController nameController = TextEditingController();
-  String selectedRole = 'Infant';
+  late TextEditingController bearerController;
+  late TextEditingController nameController;
+  late String selectedRole;
+
+  @override
+  void initState() {
+    super.initState();
+
+    bearerController = TextEditingController(text: widget.device.bearer);
+    nameController = TextEditingController(text: widget.device.nickname);
+
+    selectedRole = (widget.device.careMode == 'INFANT' ||
+            widget.device.careMode == 'ADULT')
+        ? widget.device.careMode
+        : 'INFANT';
+  }
+
+  @override
+  void dispose() {
+    bearerController.dispose();
+    nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -23,17 +46,18 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const Text(
-              'Pair with Device',
+              'Edit Device',
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 16),
 
+            // Campo de Bearer
             TextFormField(
               controller: bearerController,
               decoration: InputDecoration(
                 labelText: 'Bearer',
                 labelStyle: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                hintText: 'Example: Cris...',
+                hintText: 'Ejemplo: Cris...',
                 hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(8),
@@ -47,7 +71,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Campo para el nombre del dispositivo
+            // Campo de Nombre del Dispositivo
             TextFormField(
               controller: nameController,
               decoration: InputDecoration(
@@ -67,7 +91,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
             ),
             const SizedBox(height: 12),
 
-            // Campo para seleccionar rol
+            // Dropdown para seleccionar rol
             DropdownButtonFormField<String>(
               value: selectedRole,
               decoration: InputDecoration(
@@ -81,7 +105,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                   horizontal: 16,
                 ),
               ),
-              items: ['Infant', 'Adult']
+              items: ['INFANT', 'ADULT']
                   .map((role) => DropdownMenuItem(
                         value: role,
                         child: Text(
@@ -106,13 +130,13 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
                   child: const Text(
-                    'Cancel',
+                    'Cancelar',
                     style: TextStyle(color: Colors.grey),
                   ),
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    // Lógica para agregar el dispositivo
+                    // Implementar la lógica de actualización aquí
                     Navigator.of(context).pop();
                   },
                   style: ElevatedButton.styleFrom(
@@ -124,7 +148,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Accept'),
+                  child: const Text('Aceptar'),
                 ),
               ],
             ),

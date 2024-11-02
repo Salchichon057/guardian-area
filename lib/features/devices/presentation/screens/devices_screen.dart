@@ -5,7 +5,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
 import 'package:guardian_area/features/devices/domain/domain.dart';
 import 'package:guardian_area/features/devices/presentation/providers/device_provider.dart';
-import 'package:guardian_area/features/devices/presentation/widgets/select_device_dialog.dart';
 import 'package:guardian_area/features/devices/presentation/widgets/widgets.dart';
 
 class DevicesScreen extends ConsumerWidget {
@@ -65,8 +64,7 @@ class DevicesScreen extends ConsumerWidget {
                   return Future.value();
                 },
                 child: deviceAsyncValue.when(
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(child: CircularProgressIndicator()),
                   error: (error, stackTrace) => Center(
                     child: Text(
                       'Error: ${error.toString().length > 50 ? '${error.toString().substring(0, 50)}...' : error.toString()}',
@@ -79,14 +77,10 @@ class DevicesScreen extends ConsumerWidget {
                     }
 
                     return FutureBuilder<String?>(
-                      future: ref
-                          .read(deviceProvider(userId.toString()).notifier)
-                          .getSelectedDeviceId(),
+                      future: ref.read(deviceProvider(userId.toString()).notifier).getSelectedDeviceId(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState ==
-                            ConnectionState.waiting) {
-                          return const Center(
-                              child: CircularProgressIndicator());
+                        if (snapshot.connectionState == ConnectionState.waiting) {
+                          return const Center(child: CircularProgressIndicator());
                         }
 
                         final selectedDeviceId = snapshot.data;
@@ -95,17 +89,15 @@ class DevicesScreen extends ConsumerWidget {
                           itemCount: devices.length,
                           itemBuilder: (context, index) {
                             final device = devices[index];
-                            return GestureDetector(
-                              onTap: () {
-                                showSelectDeviceDialog(
-                                    context, ref, device, userId.toString());
-
-                                // refresh de la página
+                            return DeviceCard(
+                              device: device,
+                              selectedDeviceId: selectedDeviceId,
+                              onSelectDevice: () {
+                                showSelectDeviceDialog(context, ref, device, userId.toString());
                               },
-                              child: DeviceCard(
-                                device: device,
-                                selectedDeviceId: selectedDeviceId,
-                              ),
+                              onEditDevice: () {
+                                showEditDeviceDialog(context, device);
+                              },
                             );
                           },
                         );
@@ -128,8 +120,7 @@ class DevicesScreen extends ConsumerWidget {
         return AddDeviceDialog(
           onAssignDevice: (deviceId) async {
             final assignProvider = ref.read(deviceAssignProvider.notifier);
-            await assignProvider.assignDeviceToUser(
-                dialogContext, deviceId, userId);
+            await assignProvider.assignDeviceToUser(dialogContext, deviceId, userId);
 
             if (!ref.read(deviceAssignProvider).hasError) {
               if (Navigator.of(dialogContext).canPop()) {
@@ -143,8 +134,7 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  void showSelectDeviceDialog(
-      BuildContext context, WidgetRef ref, Device device, String userId) {
+  void showSelectDeviceDialog(BuildContext context, WidgetRef ref, Device device, String userId) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -152,15 +142,8 @@ class DevicesScreen extends ConsumerWidget {
           device: device,
           userId: userId,
           onConfirm: () async {
-            // Llamar al método de selección de dispositivo
-            await ref
-                .read(deviceProvider(userId).notifier)
-                .selectDevice(device);
-
-            // Refrescar la lista de dispositivos para actualizar la UI
+            await ref.read(deviceProvider(userId).notifier).selectDevice(device);
             ref.refresh(deviceProvider(userId));
-
-            // Cerrar el diálogo después de seleccionar el dispositivo
             Navigator.of(dialogContext).pop();
           },
         );
@@ -168,14 +151,14 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  Color getStatusColor(String status) {
-    switch (status) {
-      case 'CONNECTED':
-        return Colors.green;
-      case 'DISCONNECTED':
-        return Colors.red;
-      default:
-        return Colors.grey;
-    }
+  void showEditDeviceDialog(BuildContext context, Device device) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return EditDeviceDialog(
+          device: device,
+        );
+      },
+    );
   }
 }

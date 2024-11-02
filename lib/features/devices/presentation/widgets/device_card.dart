@@ -4,11 +4,15 @@ import 'package:guardian_area/features/devices/domain/entities/device.dart';
 class DeviceCard extends StatelessWidget {
   final Device device;
   final String? selectedDeviceId;
+  final VoidCallback onSelectDevice;
+  final VoidCallback onEditDevice;
 
   const DeviceCard({
     super.key,
     required this.device,
     required this.selectedDeviceId,
+    required this.onSelectDevice,
+    required this.onEditDevice,
   });
 
   @override
@@ -67,6 +71,26 @@ class DeviceCard extends StatelessWidget {
                       ? Colors.red
                       : Colors.grey,
             ),
+          ),
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert),
+            onSelected: (value) {
+              if (value == 'select') {
+                onSelectDevice();
+              } else if (value == 'edit') {
+                onEditDevice();
+              }
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'select',
+                child: Text('Select Device'),
+              ),
+              const PopupMenuItem(
+                value: 'edit',
+                child: Text('Edit Device'),
+              ),
+            ],
           ),
         ],
       ),
