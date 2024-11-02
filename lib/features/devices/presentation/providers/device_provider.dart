@@ -1,3 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/devices/domain/entities/device.dart';
 import 'package:guardian_area/features/devices/infrastructure/infrastructure.dart';
@@ -20,16 +24,30 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
 
 class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
   final DeviceRepositoryImpl repository;
+  final Ref ref;
 
-  DeviceAssignNotifier({required this.repository}) : super(const AsyncData(null));
+  DeviceAssignNotifier({required this.repository, required this.ref}) : super(const AsyncData(null));
 
-  Future<void> assignDeviceToUser(String deviceRecordId, String userId) async {
-    state = const AsyncLoading();
+  Future<void> assignDeviceToUser(
+      BuildContext context, String deviceRecordId, String userId) async {
+    state = const AsyncValue.loading();
     try {
       await repository.assignDeviceToUser(deviceRecordId, userId);
-      state = const AsyncData(null);
-    } catch (e, stackTrace) {
-      state = AsyncValue.error(e, stackTrace);
+
+      final deviceNotifier = ref.read(deviceProvider(userId).notifier);
+      await deviceNotifier.fetchDevices(userId);
+
+      Navigator.of(context).pop();
+    } on DioException catch (e, stackTrace) {
+      final errorMessage = e.response?.data?['message']?.toString() ?? 'Device not found';
+      state = AsyncValue.error(errorMessage, stackTrace);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(errorMessage),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 }
@@ -55,9 +73,10 @@ final deviceProvider = StateNotifierProvider.family<DeviceNotifier,
   },
 );
 
-final deviceAssignProvider = StateNotifierProvider<DeviceAssignNotifier, AsyncValue<void>>(
+final deviceAssignProvider =
+    StateNotifierProvider<DeviceAssignNotifier, AsyncValue<void>>(
   (ref) {
     final repository = ref.watch(deviceRepositoryProvider);
-    return DeviceAssignNotifier(repository: repository);
+    return DeviceAssignNotifier(repository: repository, ref: ref);
   },
 );

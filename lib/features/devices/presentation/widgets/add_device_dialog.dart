@@ -88,7 +88,7 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
                     ),
                   ),
                   child: isAssigning
-                      ? const CircularProgressIndicator(color: Colors.white)
+                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
                       : const Text('Accept', style: TextStyle(fontSize: 14)),
                 ),
               ],
