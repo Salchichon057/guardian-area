@@ -64,7 +64,8 @@ class DevicesScreen extends ConsumerWidget {
                   return Future.value();
                 },
                 child: deviceAsyncValue.when(
-                  loading: () => const Center(child: CircularProgressIndicator()),
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
                   error: (error, stackTrace) => Center(
                     child: Text(
                       'Error: ${error.toString().length > 50 ? '${error.toString().substring(0, 50)}...' : error.toString()}',
@@ -77,10 +78,14 @@ class DevicesScreen extends ConsumerWidget {
                     }
 
                     return FutureBuilder<String?>(
-                      future: ref.read(deviceProvider(userId.toString()).notifier).getSelectedDeviceId(),
+                      future: ref
+                          .read(deviceProvider(userId.toString()).notifier)
+                          .getSelectedDeviceId(),
                       builder: (context, snapshot) {
-                        if (snapshot.connectionState == ConnectionState.waiting) {
-                          return const Center(child: CircularProgressIndicator());
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return const Center(
+                              child: CircularProgressIndicator());
                         }
 
                         final selectedDeviceId = snapshot.data;
@@ -93,10 +98,11 @@ class DevicesScreen extends ConsumerWidget {
                               device: device,
                               selectedDeviceId: selectedDeviceId,
                               onSelectDevice: () {
-                                showSelectDeviceDialog(context, ref, device, userId.toString());
+                                showSelectDeviceDialog(
+                                    context, ref, device, userId.toString());
                               },
                               onEditDevice: () {
-                                showEditDeviceDialog(context, device);
+                                showEditDeviceDialog(context, device, userId.toString());
                               },
                             );
                           },
@@ -120,7 +126,8 @@ class DevicesScreen extends ConsumerWidget {
         return AddDeviceDialog(
           onAssignDevice: (deviceId) async {
             final assignProvider = ref.read(deviceAssignProvider.notifier);
-            await assignProvider.assignDeviceToUser(dialogContext, deviceId, userId);
+            await assignProvider.assignDeviceToUser(
+                dialogContext, deviceId, userId);
 
             if (!ref.read(deviceAssignProvider).hasError) {
               if (Navigator.of(dialogContext).canPop()) {
@@ -134,7 +141,8 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  void showSelectDeviceDialog(BuildContext context, WidgetRef ref, Device device, String userId) {
+  void showSelectDeviceDialog(
+      BuildContext context, WidgetRef ref, Device device, String userId) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
@@ -142,7 +150,9 @@ class DevicesScreen extends ConsumerWidget {
           device: device,
           userId: userId,
           onConfirm: () async {
-            await ref.read(deviceProvider(userId).notifier).selectDevice(device);
+            await ref
+                .read(deviceProvider(userId).notifier)
+                .selectDevice(device);
             ref.refresh(deviceProvider(userId));
             Navigator.of(dialogContext).pop();
           },
@@ -151,12 +161,14 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  void showEditDeviceDialog(BuildContext context, Device device) {
+  void showEditDeviceDialog(
+      BuildContext context, Device device, String userId) {
     showDialog(
       context: context,
       builder: (BuildContext dialogContext) {
         return EditDeviceDialog(
           device: device,
+          userId: userId,
         );
       },
     );

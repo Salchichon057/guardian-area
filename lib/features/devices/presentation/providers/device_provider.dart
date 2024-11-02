@@ -29,7 +29,8 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
   Future<void> selectDevice(Device device) async {
     try {
       // Guardamos el deviceRecordId en el almacenamiento para usarlo en la pantalla
-      await storageService.setKeyValue<String>('selectedDeviceRecordId', device.guardianAreaDeviceRecordId);
+      await storageService.setKeyValue<String>(
+          'selectedDeviceRecordId', device.guardianAreaDeviceRecordId);
       await storageService.setKeyValue<String>('selectedApiKey', device.apiKey);
       // No actualizamos la lista de dispositivos; el estilo se aplica en la pantalla directamente
 
@@ -44,6 +45,32 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
 
   Future<String?> getSelectedDeviceId() async {
     return await storageService.getValue<String>('selectedDeviceRecordId');
+  }
+
+  Future<void> updateDevice(Device device, String bearer, String deviceNickname,
+      String deviceCareModes, String deviceStatuses) async {
+    try {
+      final updatedDevice = await repository.updateDevice(
+        bearer,
+        deviceNickname,
+        deviceCareModes,
+        deviceStatuses,
+        device.guardianAreaDeviceRecordId,
+      );
+
+      // Actualiza la lista de dispositivos en el estado
+      state = state.whenData((devices) {
+        return devices
+            .map((d) => d.guardianAreaDeviceRecordId ==
+                    updatedDevice.guardianAreaDeviceRecordId
+                ? updatedDevice
+                : d)
+            .toList();
+      });
+    } catch (e, stackTrace) {
+      print("Error al actualizar el dispositivo: $e");
+      state = AsyncValue.error(e, stackTrace);
+    }
   }
 }
 

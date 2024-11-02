@@ -1,10 +1,19 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/devices/domain/entities/device.dart';
+import 'package:guardian_area/features/devices/presentation/providers/device_provider.dart';
 
 class EditDeviceDialog extends StatefulWidget {
   final Device device;
+  final String userId;
 
-  const EditDeviceDialog({super.key, required this.device});
+  const EditDeviceDialog({
+    super.key,
+    required this.device,
+    required this.userId,
+  });
 
   @override
   State<EditDeviceDialog> createState() => _EditDeviceDialogState();
@@ -21,11 +30,7 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
 
     bearerController = TextEditingController(text: widget.device.bearer);
     nameController = TextEditingController(text: widget.device.nickname);
-
-    selectedRole = (widget.device.careMode == 'INFANT' ||
-            widget.device.careMode == 'ADULT')
-        ? widget.device.careMode
-        : 'INFANT';
+    selectedRole = widget.device.careMode;
   }
 
   @override
@@ -51,69 +56,36 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
             ),
             const SizedBox(height: 16),
 
-            // Campo de Bearer
+            // Bearer Field
             TextFormField(
               controller: bearerController,
               decoration: InputDecoration(
                 labelText: 'Bearer',
-                labelStyle: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                hintText: 'Ejemplo: Cris...',
-                hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 12),
 
-            // Campo de Nombre del Dispositivo
+            // Device Name Field
             TextFormField(
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Device Name',
-                labelStyle: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                hintText: 'Enter a name...',
-                hintStyle: const TextStyle(fontSize: 14, color: Colors.grey),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              style: const TextStyle(fontSize: 14),
             ),
             const SizedBox(height: 12),
 
-            // Dropdown para seleccionar rol
+            // Role Dropdown
             DropdownButtonFormField<String>(
               value: selectedRole,
               decoration: InputDecoration(
-                labelText: 'Choose a role',
-                labelStyle: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                contentPadding: const EdgeInsets.symmetric(
-                  vertical: 12,
-                  horizontal: 16,
-                ),
+                labelText: 'Role',
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
-              items: ['INFANT', 'ADULT']
-                  .map((role) => DropdownMenuItem(
-                        value: role,
-                        child: Text(
-                          role,
-                          style: const TextStyle(fontSize: 14),
-                        ),
-                      ))
-                  .toList(),
+              items: ['INFANT', 'ADULT'].map((role) {
+                return DropdownMenuItem(value: role, child: Text(role));
+              }).toList(),
               onChanged: (value) {
                 if (value != null) {
                   setState(() {
@@ -124,31 +96,34 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
             ),
             const SizedBox(height: 16),
 
+            // Action Buttons
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text(
-                    'Cancelar',
-                    style: TextStyle(color: Colors.grey),
-                  ),
+                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
                 ),
-                ElevatedButton(
-                  onPressed: () {
-                    // Implementar la lógica de actualización aquí
-                    Navigator.of(context).pop();
+                Consumer(
+                  builder: (context, ref, child) {
+                    return ElevatedButton(
+                      onPressed: () async {
+                        await ref.read(deviceProvider(widget.userId).notifier).updateDevice(
+                          widget.device,
+                          bearerController.text,
+                          nameController.text,
+                          selectedRole,
+                          widget.device.status,
+                        );
+                        Navigator.of(context).pop();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF08273A),
+                        foregroundColor: Colors.white,
+                      ),
+                      child: const Text('Save'),
+                    );
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF08273A),
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 20, vertical: 12),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: const Text('Aceptar'),
                 ),
               ],
             ),
