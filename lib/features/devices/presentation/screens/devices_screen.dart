@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
 import 'package:guardian_area/features/devices/domain/entities/device.dart';
 import 'package:guardian_area/features/devices/presentation/providers/device_provider.dart';
+import 'package:guardian_area/features/devices/presentation/widgets/widgets.dart';
 
 class DevicesScreen extends ConsumerWidget {
   const DevicesScreen({super.key});
@@ -10,8 +11,8 @@ class DevicesScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
-
     final userId = authState.userProfile?.id;
+    
     if (userId == null) {
       return Scaffold(
         appBar: AppBar(
@@ -36,7 +37,7 @@ class DevicesScreen extends ConsumerWidget {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    // Acción para añadir dispositivo
+                    showAddDeviceDialog(context);
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Add'),
@@ -51,7 +52,6 @@ class DevicesScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-
             Expanded(
               child: FutureBuilder<List<Device>>(
                 future: ref.read(deviceProvider(userId.toString()).future),
@@ -64,7 +64,6 @@ class DevicesScreen extends ConsumerWidget {
                     return const Center(child: Text('No devices found'));
                   } else {
                     final devices = snapshot.data!;
-
                     return ListView.builder(
                       itemCount: devices.length,
                       itemBuilder: (context, index) {
@@ -87,6 +86,16 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
+  // Método para mostrar el modal central
+  void showAddDeviceDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return const AddDeviceDialog();
+      },
+    );
+  }
+
   Color getStatusColor(String status) {
     switch (status) {
       case 'CONNECTED':
@@ -96,77 +105,5 @@ class DevicesScreen extends ConsumerWidget {
       default:
         return Colors.grey;
     }
-  }
-}
-
-class DeviceCard extends StatelessWidget {
-  final String name;
-  final String careMode;
-  final String status;
-  final Color statusColor;
-
-  const DeviceCard({
-    super.key,
-    required this.name,
-    required this.careMode,
-    required this.status,
-    required this.statusColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: statusColor,
-          width: 2,
-        ),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          const Icon(
-            Icons
-                .watch,
-            size: 36,
-            color: Color(0xFF08273A),
-          ),
-          const SizedBox(width: 16),
-          // Información del dispositivo
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  name,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.black,
-                  ),
-                ),
-                Text(
-                  careMode,
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          Text(
-            status,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.bold,
-              color: statusColor,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
