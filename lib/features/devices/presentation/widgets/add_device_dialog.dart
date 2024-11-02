@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddDeviceDialog extends StatefulWidget {
-  final Function(String deviceId) onAssignDevice;
+  final Function(String deviceRecordId) onAssignDevice;
 
   const AddDeviceDialog({super.key, required this.onAssignDevice});
 
@@ -57,9 +57,9 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    final deviceId = deviceIdController.text.trim();
-                    if (deviceId.isNotEmpty) {
-                      widget.onAssignDevice(deviceId);
+                    final deviceRecordId = deviceIdController.text.trim();
+                    if (deviceRecordId.isNotEmpty) {
+                      widget.onAssignDevice(deviceRecordId);
                       Navigator.of(context).pop();
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
