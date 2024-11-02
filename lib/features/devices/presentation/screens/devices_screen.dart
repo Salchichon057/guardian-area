@@ -1,3 +1,5 @@
+// ignore_for_file: unused_result
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
@@ -11,7 +13,7 @@ class DevicesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final authState = ref.watch(authProvider);
     final userId = authState.userProfile?.id;
-    
+
     if (userId == null) {
       return Scaffold(
         appBar: AppBar(
@@ -38,7 +40,7 @@ class DevicesScreen extends ConsumerWidget {
                 ),
                 ElevatedButton.icon(
                   onPressed: () {
-                    showAddDeviceDialog(context);
+                    showAddDeviceDialog(context, ref, userId.toString());
                   },
                   icon: const Icon(Icons.add),
                   label: const Text('Add'),
@@ -53,11 +55,12 @@ class DevicesScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
-
             Expanded(
               child: RefreshIndicator(
+                color: const Color(0xFF08273A),
                 onRefresh: () async {
-                  return ref.refresh(deviceProvider(userId.toString()).future);
+                  ref.refresh(deviceProvider(userId.toString()));
+                  return Future.value();
                 },
                 child: deviceAsyncValue.when(
                   loading: () => const Center(child: CircularProgressIndicator()),
@@ -88,12 +91,15 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  // Método para mostrar el modal central
-  void showAddDeviceDialog(BuildContext context) {
+  void showAddDeviceDialog(BuildContext context, WidgetRef ref, String userId) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return const AddDeviceDialog();
+        return AddDeviceDialog(
+          onAssignDevice: (deviceId) {
+            ref.read(deviceProvider(userId).notifier).assignDeviceToUser(deviceId, userId);
+          },
+        );
       },
     );
   }
