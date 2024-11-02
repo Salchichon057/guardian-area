@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
-import 'package:guardian_area/features/devices/domain/entities/device.dart';
 import 'package:guardian_area/features/devices/presentation/providers/device_provider.dart';
 import 'package:guardian_area/features/devices/presentation/widgets/widgets.dart';
 
@@ -21,6 +20,8 @@ class DevicesScreen extends ConsumerWidget {
         body: const Center(child: Text('User not authenticated')),
       );
     }
+
+    final deviceAsyncValue = ref.watch(deviceProvider(userId.toString()));
 
     return Scaffold(
       body: Padding(
@@ -52,18 +53,19 @@ class DevicesScreen extends ConsumerWidget {
               ],
             ),
             const SizedBox(height: 16),
+
             Expanded(
-              child: FutureBuilder<List<Device>>(
-                future: ref.read(deviceProvider(userId.toString()).future),
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  } else if (snapshot.hasError) {
-                    return Center(child: Text('Error: ${snapshot.error}'));
-                  } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                    return const Center(child: Text('No devices found'));
-                  } else {
-                    final devices = snapshot.data!;
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  return ref.refresh(deviceProvider(userId.toString()).future);
+                },
+                child: deviceAsyncValue.when(
+                  loading: () => const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) => Center(child: Text('Error: $error')),
+                  data: (devices) {
+                    if (devices.isEmpty) {
+                      return const Center(child: Text('No devices found'));
+                    }
                     return ListView.builder(
                       itemCount: devices.length,
                       itemBuilder: (context, index) {
@@ -76,8 +78,8 @@ class DevicesScreen extends ConsumerWidget {
                         );
                       },
                     );
-                  }
-                },
+                  },
+                ),
               ),
             ),
           ],
