@@ -1,0 +1,23 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "projectId": "guardianarea-69611",
+                    "appId": "1:361362848559:android:daa4437b646366a0ccffda",
+                    "fileOutput": "android/app/google-services.json"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "projectId": "guardianarea-69611",
+                    "configurations": {
+                        "android": "1:361362848559:android:daa4437b646366a0ccffda",
+                        "ios": "1:361362848559:ios:a17117a817556598ccffda",
+                        "windows": "1:361362848559:web:37a5653dc8051085ccffda"
+                    }
+                }
+            }
+        }
+    }
+}

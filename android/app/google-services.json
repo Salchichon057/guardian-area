@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "361362848559",
+    "project_id": "guardianarea-69611",
+    "storage_bucket": "guardianarea-69611.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:361362848559:android:daa4437b646366a0ccffda",
+        "android_client_info": {
+          "package_name": "com.digitaldart.guardianarea"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCerC0PNTxU_gxUq31N5tNkxOW6LyjQLac"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
