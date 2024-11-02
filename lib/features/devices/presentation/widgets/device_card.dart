@@ -1,27 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:guardian_area/features/devices/domain/entities/device.dart';
 
 class DeviceCard extends StatelessWidget {
-  final String name;
-  final String careMode;
-  final String status;
-  final Color statusColor;
+  final Device device;
+  final String? selectedDeviceId;
 
   const DeviceCard({
     super.key,
-    required this.name,
-    required this.careMode,
-    required this.status,
-    required this.statusColor,
+    required this.device,
+    required this.selectedDeviceId,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isSelected = device.guardianAreaDeviceRecordId == selectedDeviceId;
+
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 8),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
+        color: isSelected ? Colors.lightBlue[50] : Colors.white,
         border: Border.all(
-          color: statusColor,
+          color: isSelected ? Colors.lightBlue : Colors.grey,
           width: 2,
         ),
         borderRadius: BorderRadius.circular(12),
@@ -29,19 +29,17 @@ class DeviceCard extends StatelessWidget {
       child: Row(
         children: [
           const Icon(
-            Icons
-                .watch,
+            Icons.watch,
             size: 36,
             color: Color(0xFF08273A),
           ),
           const SizedBox(width: 16),
-          // Información del dispositivo
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  device.nickname,
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
@@ -49,7 +47,7 @@ class DeviceCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  careMode,
+                  device.careMode,
                   style: const TextStyle(
                     fontSize: 14,
                     color: Colors.grey,
@@ -59,11 +57,15 @@ class DeviceCard extends StatelessWidget {
             ),
           ),
           Text(
-            status,
+            device.status,
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: statusColor,
+              color: device.status == "CONNECTED"
+                  ? Colors.green
+                  : device.status == "DISCONNECTED"
+                      ? Colors.red
+                      : Colors.grey,
             ),
           ),
         ],

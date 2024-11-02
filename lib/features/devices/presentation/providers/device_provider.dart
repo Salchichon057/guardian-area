@@ -6,11 +6,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/devices/domain/entities/device.dart';
 import 'package:guardian_area/features/devices/infrastructure/infrastructure.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
+import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';
 
 class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
   final DeviceRepositoryImpl repository;
+  final KeyValueStorageService storageService;
 
-  DeviceNotifier({required this.repository}) : super(const AsyncLoading());
+  DeviceNotifier({
+    required this.repository,
+    required this.storageService,
+  }) : super(const AsyncLoading());
 
   Future<void> fetchDevices(String userId) async {
     try {
@@ -20,12 +25,30 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+
+  Future<void> selectDevice(Device device) async {
+    try {
+      // Guardamos el deviceRecordId en el almacenamiento para usarlo en la pantalla
+      await storageService.setKeyValue<String>('selectedDeviceRecordId', device.guardianAreaDeviceRecordId);
+      await storageService.setKeyValue<String>('selectedApiKey', device.apiKey);
+      // No actualizamos la lista de dispositivos; el estilo se aplica en la pantalla directamente
+
+      print('Device selected: ${device.nickname}, ${device.guardianAreaDeviceRecordId} - ${device.apiKey}');
+    } catch (e) {
+      print("Error al seleccionar el dispositivo: $e");
+    }
+  }
+
+  Future<String?> getSelectedDeviceId() async {
+    return await storageService.getValue<String>('selectedDeviceRecordId');
+  }
 }
 
 class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
   final DeviceRepositoryImpl repository;
 
-  DeviceAssignNotifier({required this.repository}) : super(const AsyncData(null));
+  DeviceAssignNotifier({required this.repository})
+      : super(const AsyncData(null));
 
   Future<void> assignDeviceToUser(
       BuildContext context, String deviceRecordId, String userId) async {
@@ -53,7 +76,6 @@ class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
   }
 }
 
-
 final deviceRepositoryProvider = Provider<DeviceRepositoryImpl>((ref) {
   final datasource = ref.watch(deviceDatasourceProvider);
   return DeviceRepositoryImpl(datasource);
@@ -69,7 +91,13 @@ final deviceProvider = StateNotifierProvider.family<DeviceNotifier,
     AsyncValue<List<Device>>, String>(
   (ref, userId) {
     final repository = ref.watch(deviceRepositoryProvider);
-    final notifier = DeviceNotifier(repository: repository);
+    final storageService = ref.watch(keyValueStorageServiceProvider);
+
+    final notifier = DeviceNotifier(
+      repository: repository,
+      storageService: storageService,
+    );
+
     notifier.fetchDevices(userId);
     return notifier;
   },
