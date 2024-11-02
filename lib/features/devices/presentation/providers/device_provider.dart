@@ -24,9 +24,8 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
 
 class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
   final DeviceRepositoryImpl repository;
-  final Ref ref;
 
-  DeviceAssignNotifier({required this.repository, required this.ref}) : super(const AsyncData(null));
+  DeviceAssignNotifier({required this.repository}) : super(const AsyncData(null));
 
   Future<void> assignDeviceToUser(
       BuildContext context, String deviceRecordId, String userId) async {
@@ -34,14 +33,16 @@ class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       await repository.assignDeviceToUser(deviceRecordId, userId);
 
-      final deviceNotifier = ref.read(deviceProvider(userId).notifier);
-      await deviceNotifier.fetchDevices(userId);
+      if (Navigator.canPop(context)) {
+        Navigator.of(context).pop();
+      }
 
-      Navigator.of(context).pop();
+      state = const AsyncValue.data(null);
     } on DioException catch (e, stackTrace) {
-      final errorMessage = e.response?.data?['message']?.toString() ?? 'Device not found';
+      final errorMessage = e.response?.data?['message'] ?? 'Device not found';
       state = AsyncValue.error(errorMessage, stackTrace);
 
+      // Muestra el error en un SnackBar
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(errorMessage),
@@ -51,6 +52,7 @@ class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
     }
   }
 }
+
 
 final deviceRepositoryProvider = Provider<DeviceRepositoryImpl>((ref) {
   final datasource = ref.watch(deviceDatasourceProvider);
@@ -77,6 +79,6 @@ final deviceAssignProvider =
     StateNotifierProvider<DeviceAssignNotifier, AsyncValue<void>>(
   (ref) {
     final repository = ref.watch(deviceRepositoryProvider);
-    return DeviceAssignNotifier(repository: repository, ref: ref);
+    return DeviceAssignNotifier(repository: repository);
   },
 );

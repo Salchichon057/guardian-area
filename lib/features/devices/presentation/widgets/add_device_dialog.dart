@@ -86,9 +86,18 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(8),
                     ),
+                    minimumSize: const Size(
+                        100, 0),
                   ),
                   child: isAssigning
-                      ? const CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                      ? const SizedBox(
+                          width: 20, // Ancho del indicador
+                          height: 20, // Alto del indicador
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
                       : const Text('Accept', style: TextStyle(fontSize: 14)),
                 ),
               ],

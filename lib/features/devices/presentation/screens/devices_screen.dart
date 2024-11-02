@@ -97,26 +97,27 @@ class DevicesScreen extends ConsumerWidget {
     );
   }
 
-  void showAddDeviceDialog(BuildContext context, WidgetRef ref, String userId) {
-    showDialog(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AddDeviceDialog(
-          onAssignDevice: (deviceId) async {
-            final assignProvider = ref.read(deviceAssignProvider.notifier);
-            await assignProvider.assignDeviceToUser(
-                dialogContext, deviceId, userId);
+void showAddDeviceDialog(BuildContext context, WidgetRef ref, String userId) {
+  showDialog(
+    context: context,
+    builder: (BuildContext dialogContext) {
+      return AddDeviceDialog(
+        onAssignDevice: (deviceId) async {
+          final assignProvider = ref.read(deviceAssignProvider.notifier);
+          await assignProvider.assignDeviceToUser(dialogContext, deviceId, userId);
 
-            // Verificar si hubo errores
-            if (!ref.read(deviceAssignProvider).hasError) {
+          if (!ref.read(deviceAssignProvider).hasError) {
+            if (Navigator.of(dialogContext).canPop()) {
               Navigator.of(dialogContext).pop();
-              ref.refresh(deviceProvider(userId));
             }
-          },
-        );
-      },
-    );
-  }
+            ref.refresh(deviceProvider(userId));
+          }
+        },
+      );
+    },
+  );
+}
+
 
   Color getStatusColor(String status) {
     switch (status) {
