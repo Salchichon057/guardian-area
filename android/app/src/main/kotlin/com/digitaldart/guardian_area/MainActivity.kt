@@ -1,4 +1,4 @@
-package com.digitaldart.guardian_area
+package com.digitaldart.guardianarea
 
 import io.flutter.embedding.android.FlutterActivity
 

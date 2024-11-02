@@ -73,7 +73,7 @@ class LoginScreen extends ConsumerWidget {
                       const Text(
                         "GuardianArea",
                         style: TextStyle(
-                          fontSize: 48,
+                          fontSize: 36,
                           fontWeight: FontWeight.bold,
                           color: Colors.black87,
                         ),
