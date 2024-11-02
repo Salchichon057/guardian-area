@@ -61,7 +61,8 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               controller: bearerController,
               decoration: InputDecoration(
                 labelText: 'Bearer',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
             const SizedBox(height: 12),
@@ -71,20 +72,33 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               controller: nameController,
               decoration: InputDecoration(
                 labelText: 'Device Name',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
               ),
             ),
             const SizedBox(height: 12),
 
             // Role Dropdown
+            // Dropdown para seleccionar rol
             DropdownButtonFormField<String>(
               value: selectedRole,
               decoration: InputDecoration(
                 labelText: 'Role',
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                labelStyle: const TextStyle(
+                    fontSize: 16, color: Color.fromARGB(255, 0, 0, 0)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
               ),
               items: ['INFANT', 'ADULT'].map((role) {
-                return DropdownMenuItem(value: role, child: Text(role));
+                return DropdownMenuItem(
+                  value: role,
+                  child: Text(
+                    role,
+                    style: const TextStyle(fontSize: 14, color: Colors.black),
+                  ),
+                );
               }).toList(),
               onChanged: (value) {
                 if (value != null) {
@@ -93,7 +107,10 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
                   });
                 }
               },
+              style: const TextStyle(
+                  fontSize: 14), // Aplica el tamaño de fuente aquí también
             ),
+
             const SizedBox(height: 16),
 
             // Action Buttons
@@ -102,24 +119,33 @@ class _EditDeviceDialogState extends State<EditDeviceDialog> {
               children: [
                 TextButton(
                   onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
+                  child: const Text('Cancel',
+                      style: TextStyle(color: Colors.grey)),
                 ),
                 Consumer(
                   builder: (context, ref, child) {
                     return ElevatedButton(
                       onPressed: () async {
-                        await ref.read(deviceProvider(widget.userId).notifier).updateDevice(
-                          widget.device,
-                          bearerController.text,
-                          nameController.text,
-                          selectedRole,
-                          widget.device.status,
-                        );
+                        await ref
+                            .read(deviceProvider(widget.userId).notifier)
+                            .updateDevice(
+                              widget.device,
+                              bearerController.text,
+                              nameController.text,
+                              selectedRole,
+                              widget.device.status,
+                            );
                         Navigator.of(context).pop();
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFF08273A),
                         foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 20, vertical: 12),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        minimumSize: const Size(100, 0),
                       ),
                       child: const Text('Save'),
                     );

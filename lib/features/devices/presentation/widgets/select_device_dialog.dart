@@ -42,11 +42,17 @@ class SelectDeviceDialog extends StatelessWidget {
                 ),
                 ElevatedButton(
                   onPressed: () {
-                    onConfirm();  // Ejecuta el callback al confirmar
+                    onConfirm(); // Ejecuta el callback al confirmar
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF08273A),
                     foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 20, vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    minimumSize: const Size(100, 0),
                   ),
                   child: const Text('Select'),
                 ),
