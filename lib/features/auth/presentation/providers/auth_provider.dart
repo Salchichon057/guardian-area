@@ -100,6 +100,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   Future<void> logout([String? errorMessage]) async {
     await keyValueStorageService.removeKey('token');
+    // TODO: remover todos los datos que se guardan en el storage
     state = state.copyWith(
       authStatus: AuthStatus.unauthenticated,
       user: null,
