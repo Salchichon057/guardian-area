@@ -3,13 +3,13 @@ import 'package:guardian_area/features/devices/domain/entities/device.dart';
 class DeviceMapper {
   static Device fromJson(Map<String, dynamic> json) {
     return Device(
-      guardianAreaDeviceRecordId: '',
-      nickname: '',
-      bearer: '',
-      careMode: '',
-      status: '',
-      userId: '',
-      apiKey: '',
+      guardianAreaDeviceRecordId: json['guardianAreaDeviceRecordId'] ?? '',
+      nickname: json['nickname'] ?? '',
+      bearer: json['bearer'] ?? '',
+      careMode: json['careMode'] ?? '',
+      status: json['status'] ?? '',
+      userId: json['userId'].toString(),
+      apiKey: json['apiKey'] ?? '',
     );
   }
 

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 const colorSeed = Color(0xFF08273A);
-const scaffoldBackgroundColor = Color(0xFFF8F7F7);
+const scaffoldBackgroundColor = Colors.white;
 
 class AppTheme {
 
