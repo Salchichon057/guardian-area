@@ -16,11 +16,18 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
       state = AsyncValue.error(e, stackTrace);
     }
   }
+}
+
+class DeviceAssignNotifier extends StateNotifier<AsyncValue<void>> {
+  final DeviceRepositoryImpl repository;
+
+  DeviceAssignNotifier({required this.repository}) : super(const AsyncData(null));
 
   Future<void> assignDeviceToUser(String deviceRecordId, String userId) async {
+    state = const AsyncLoading();
     try {
       await repository.assignDeviceToUser(deviceRecordId, userId);
-      await fetchDevices(userId);
+      state = const AsyncData(null);
     } catch (e, stackTrace) {
       state = AsyncValue.error(e, stackTrace);
     }
@@ -38,11 +45,19 @@ final deviceDatasourceProvider = Provider<DeviceDatasourceImpl>((ref) {
   );
 });
 
-final deviceProvider = StateNotifierProvider.family<DeviceNotifier, AsyncValue<List<Device>>, String>(
+final deviceProvider = StateNotifierProvider.family<DeviceNotifier,
+    AsyncValue<List<Device>>, String>(
   (ref, userId) {
     final repository = ref.watch(deviceRepositoryProvider);
     final notifier = DeviceNotifier(repository: repository);
     notifier.fetchDevices(userId);
     return notifier;
+  },
+);
+
+final deviceAssignProvider = StateNotifierProvider<DeviceAssignNotifier, AsyncValue<void>>(
+  (ref) {
+    final repository = ref.watch(deviceRepositoryProvider);
+    return DeviceAssignNotifier(repository: repository);
   },
 );

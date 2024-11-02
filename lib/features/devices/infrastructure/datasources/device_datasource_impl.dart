@@ -37,8 +37,12 @@ class DeviceDatasourceImpl extends DeviceDatasource {
 
       return DeviceMapper.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception(
-          'Error assigning device to user: ${e.response?.data ?? e.message}');
+      final errorMessage =
+          e.response?.data['message'] ?? 'Error assigning device';
+      throw DioException(
+          requestOptions: e.requestOptions,
+          response: e.response,
+          error: errorMessage);
     }
   }
 
@@ -64,12 +68,12 @@ class DeviceDatasourceImpl extends DeviceDatasource {
 
   @override
   Future<Device> updateDevice(
-      String bearer,
-      String deviceNickname,
-      String deviceCareModes,
-      String deviceStatuses,
-      String deviceRecordId,
-      ) async {
+    String bearer,
+    String deviceNickname,
+    String deviceCareModes,
+    String deviceStatuses,
+    String deviceRecordId,
+  ) async {
     try {
       final token = await storageService.getValue<String>('token');
       if (token == null) throw Exception('Token not found');

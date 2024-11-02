@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AddDeviceDialog extends StatefulWidget {
-  final Function(String deviceRecordId) onAssignDevice;
+  final Function(String deviceId) onAssignDevice;
 
   const AddDeviceDialog({super.key, required this.onAssignDevice});
 
@@ -11,6 +11,7 @@ class AddDeviceDialog extends StatefulWidget {
 
 class _AddDeviceDialogState extends State<AddDeviceDialog> {
   final TextEditingController deviceIdController = TextEditingController();
+  bool isAssigning = false;
 
   @override
   Widget build(BuildContext context) {
@@ -56,20 +57,27 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
                   ),
                 ),
                 ElevatedButton(
-                  onPressed: () {
-                    final deviceRecordId = deviceIdController.text.trim();
-                    if (deviceRecordId.isNotEmpty) {
-                      widget.onAssignDevice(deviceRecordId);
-                      Navigator.of(context).pop();
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Please enter a Device ID',
-                              style: TextStyle(fontSize: 14)),
-                        ),
-                      );
-                    }
-                  },
+                  onPressed: isAssigning
+                      ? null
+                      : () async {
+                          setState(() {
+                            isAssigning = true;
+                          });
+                          final deviceId = deviceIdController.text.trim();
+                          if (deviceId.isNotEmpty) {
+                            await widget.onAssignDevice(deviceId);
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Please enter a Device ID',
+                                    style: TextStyle(fontSize: 14)),
+                              ),
+                            );
+                          }
+                          setState(() {
+                            isAssigning = false;
+                          });
+                        },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF08273A),
                     foregroundColor: Colors.white,
@@ -79,7 +87,9 @@ class _AddDeviceDialogState extends State<AddDeviceDialog> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                   ),
-                  child: const Text('Accept', style: TextStyle(fontSize: 14)),
+                  child: isAssigning
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : const Text('Accept', style: TextStyle(fontSize: 14)),
                 ),
               ],
             ),
