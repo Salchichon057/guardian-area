@@ -75,7 +75,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void checkAuthStatus() async {
     final token = await keyValueStorageService.getValue<String>('token');
-    if (token == null) return logout();
+    if (token == null) {
+      return logout();
+    }
 
     try {
       final authenticatedUser = await authRepository.checkAuthStatus(token);

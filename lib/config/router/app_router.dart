@@ -13,7 +13,6 @@ import 'package:guardian_area/features/profile/presentation/screens/screens.dart
 import 'package:guardian_area/features/settings/presentation/screens/screens.dart';
 import 'package:guardian_area/features/vital-signs/presentation/screens/screens.dart';
 
-
 final goRouterProvider = Provider((ref) {
   final goRouterNotifier = ref.read(goRouterNotifierProvider);
 
@@ -34,7 +33,6 @@ final goRouterProvider = Provider((ref) {
         builder: (context, state) => const RegisterScreen(),
       ),
 
-      //! ShellRoute principal con BottomNavigationBar
       ShellRoute(
         builder: (context, state, child) => MainScreen(child: child),
         routes: [
@@ -77,8 +75,8 @@ final goRouterProvider = Provider((ref) {
       ),
     ],
     redirect: (context, state) {
-      final isGoingTo = state.matchedLocation;
       final authStatus = goRouterNotifier.authStatus;
+      final isGoingTo = state.matchedLocation;
 
       if (isGoingTo == '/splash' && authStatus == AuthStatus.checking) {
         return null;
