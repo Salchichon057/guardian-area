@@ -6,7 +6,6 @@ import 'package:latlong2/latlong.dart';
 class MapNotifier extends ChangeNotifier {
   final MapController mapController;
   List<LatLng> geofencePoints = [];
-
   final Distance distance = const Distance();
 
   MapNotifier({required this.mapController});
@@ -20,20 +19,18 @@ class MapNotifier extends ChangeNotifier {
   void addGeofencePoint(LatLng point) {
     if (geofencePoints.length < 4) {
       geofencePoints.add(point);
-      _sortPointsByClosestPath();
       notifyListeners();
     }
   }
 
-  // Eliminar punto de geocerca
   void removeGeofencePoint(int index) {
     if (index >= 0 && index < geofencePoints.length) {
       geofencePoints.removeAt(index);
-      _sortPointsByClosestPath();
       notifyListeners();
     }
   }
 
+  // Ordenar puntos solo en la inicialización para establecer un orden inicial
   void _sortPointsByClosestPath() {
     if (geofencePoints.length <= 1) return;
 
@@ -45,7 +42,10 @@ class MapNotifier extends ChangeNotifier {
 
     while (remainingPoints.isNotEmpty) {
       LatLng closestPoint = remainingPoints.reduce((a, b) =>
-          distance(currentPoint, a) < distance(currentPoint, b) ? a : b);
+          distance.as(LengthUnit.Meter, currentPoint, a) <
+                  distance.as(LengthUnit.Meter, currentPoint, b)
+              ? a
+              : b);
       sortedPoints.add(closestPoint);
       remainingPoints.remove(closestPoint);
       currentPoint = closestPoint;
