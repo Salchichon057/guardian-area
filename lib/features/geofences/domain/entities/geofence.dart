@@ -1,12 +1,14 @@
 class Geofence {
+  final int id;
   final String name;
-  final String status;
+  final String geoFenceStatus;
   final List<Coordinate> coordinates;
   final String guardianAreaDeviceRecordId;
 
   Geofence({
+    required this.id,
     required this.name,
-    required this.status,
+    required this.geoFenceStatus,
     required this.coordinates,
     required this.guardianAreaDeviceRecordId,
   });
