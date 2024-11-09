@@ -2,81 +2,139 @@ import 'package:flutter/material.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/presentation/widgets/geofences_map_widget.dart';
 
-class GeofenceDetailsScreen extends StatelessWidget {
+class GeofenceDetailsScreen extends StatefulWidget {
   final Geofence geofence;
 
   const GeofenceDetailsScreen({super.key, required this.geofence});
 
   @override
+  GeofenceDetailsScreenState createState() => GeofenceDetailsScreenState();
+}
+
+class GeofenceDetailsScreenState extends State<GeofenceDetailsScreen> {
+  late TextEditingController _nameController;
+  bool _isEditing = false;
+  late Geofence _tempGeofence;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController = TextEditingController(text: widget.geofence.name);
+    _tempGeofence = widget.geofence.copyWith();
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    super.dispose();
+  }
+
+  void _toggleEditing() {
+    setState(() {
+      if (_isEditing) {
+        // Restablecer valores originales si se cancela la edición
+        _tempGeofence = widget.geofence.copyWith();
+        _nameController.text = widget.geofence.name; // Restablecer el texto del controlador
+      }
+      _isEditing = !_isEditing;
+    });
+  }
+
+  void _saveChanges() {
+    setState(() {
+      // Actualizar los valores de _tempGeofence con el nombre actual
+      _tempGeofence = _tempGeofence.copyWith(
+        name: _nameController.text,
+        coordinates: List.from(_tempGeofence.coordinates),
+      );
+      _isEditing = false;
+
+      // Aquí podrías llamar a un método para guardar la geocerca en la base de datos o proveedor
+      // Ejemplo: provider.updateGeofence(_tempGeofence);
+    });
+  }
+
+  void _cancelEditing() {
+    setState(() {
+      // Restaurar valores originales usando copyWith
+      _tempGeofence = widget.geofence.copyWith();
+      _nameController.text = widget.geofence.name;
+      _isEditing = false;
+    });
+  }
+
+  void _removeCoordinate(int index) {
+    setState(() {
+      // Crea una copia de las coordenadas sin el elemento eliminado
+      final newCoordinates = List<Coordinate>.from(_tempGeofence.coordinates)..removeAt(index);
+      _tempGeofence = _tempGeofence.copyWith(coordinates: newCoordinates);
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Geo-fence: ${geofence.name}', style: const TextStyle(
-          fontSize: 18
-        ),),
+        title: Text(
+          'Geo-fence: ${widget.geofence.name}',
+          style: const TextStyle(fontSize: 18),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            GeofenceMapWidget(geofence: geofence),
+            // Widget del mapa
+            GeofenceMapWidget(geofence: _tempGeofence, isEditable: _isEditing),
             const SizedBox(height: 20),
 
-            // Campo para el nombre de la geocerca
+            // Campo del nombre de la geocerca
             TextField(
+              controller: _nameController,
+              enabled: _isEditing,
               decoration: const InputDecoration(
                 labelText: 'Name',
-                hintText: 'Write the name of your Geo-fence',
                 border: OutlineInputBorder(),
               ),
-              controller: TextEditingController(text: geofence.name),
+              onChanged: (value) {
+                _tempGeofence = _tempGeofence.copyWith(name: value);
+              },
             ),
             const SizedBox(height: 20),
 
-            // Botones para Dibujar y Agregar Coordenadas
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Acción para dibujar la geocerca
-                  },
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Draw Geo-fence'),
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    // Acción para ingresar coordenadas
-                  },
-                  icon: const Icon(Icons.location_on),
-                  label: const Text('Enter Coordinates'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 20),
-
-            // Botón para editar la geocerca
+            // Botones de acción
             Center(
-              child: ElevatedButton(
-                onPressed: () {
-                  // Acción para editar la geocerca
-                },
-                child: const Text('Edit Geo-fence'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  if (_isEditing)
+                    ElevatedButton(
+                      onPressed: _cancelEditing,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                      ),
+                      child: const Text('Cancel'),
+                    ),
+                  const SizedBox(width: 10),
+                  ElevatedButton(
+                    onPressed: _isEditing ? _saveChanges : _toggleEditing,
+                    child: Text(_isEditing ? 'Save changes' : 'Edit geofence'),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: 20),
 
-            // Tabla de coordenadas
-            _buildCoordinatesTable(geofence),
+            // Tabla de coordenadas en modo edición
+            if (_isEditing) _buildCoordinatesTable(),
           ],
         ),
       ),
     );
   }
 
-  // Tabla de coordenadas con scroll interno
-  Widget _buildCoordinatesTable(Geofence geofence) {
+  Widget _buildCoordinatesTable() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -88,42 +146,28 @@ class GeofenceDetailsScreen extends StatelessWidget {
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: geofence.coordinates.length,
+          itemCount: _tempGeofence.coordinates.length,
           itemBuilder: (context, index) {
-            final coordinate = geofence.coordinates[index];
-            return _buildCoordinateRow(
-              coordinate.latitude.toStringAsFixed(4),
-              coordinate.longitude.toStringAsFixed(4),
-            );
+            return _buildCoordinateRow(index);
           },
         ),
       ],
     );
   }
 
-  // Widget para una fila de coordenadas con botones de editar y eliminar
-  Widget _buildCoordinateRow(String latitude, String longitude) {
+  Widget _buildCoordinateRow(int index) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4.0),
       child: Row(
         children: [
           Expanded(
             child: Text(
-              'Lat: $latitude, Long: $longitude',
+              'Coord ${index + 1}',
               style: const TextStyle(fontSize: 16),
             ),
           ),
           TextButton(
-            onPressed: () {
-              // Acción para editar la coordenada
-            },
-            child: const Text('Edit'),
-          ),
-          const SizedBox(width: 8),
-          TextButton(
-            onPressed: () {
-              // Acción para eliminar la coordenada
-            },
+            onPressed: () => _removeCoordinate(index),
             child: const Text('Eliminate'),
           ),
         ],
