@@ -45,7 +45,7 @@ class GeofenceMapWidget extends StatelessWidget {
               initialCameraFit: cameraFit,
               onTap: isEditable
                   ? (tapPosition, point) {
-                      // Lógica adicional para cuando el mapa está en modo editable
+                      // TODO: Lógica adicional para cuando el mapa está en modo editable
                     }
                   : null,
               interactionOptions: InteractionOptions(
