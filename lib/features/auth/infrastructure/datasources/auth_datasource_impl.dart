@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:guardian_area/config/consts/environmets.dart';
+import 'package:guardian_area/config/consts/environments.dart';
 import 'package:guardian_area/features/auth/domain/domain.dart';
 import 'package:guardian_area/features/auth/infrastructure/infrastructure.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';

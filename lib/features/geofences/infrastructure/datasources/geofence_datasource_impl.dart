@@ -1,5 +1,5 @@
 import 'package:dio/dio.dart';
-import 'package:guardian_area/config/consts/environmets.dart';
+import 'package:guardian_area/config/consts/environments.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/domain/datasources/geofence_datasource.dart';
 import 'package:guardian_area/features/geofences/infrastructure/mappers/geofence_mapper.dart';
