@@ -6,19 +6,18 @@ import 'package:guardian_area/features/geofences/infrastructure/mappers/geofence
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';
 
 class GeofenceDatasourceImpl implements GeofenceDatasource {
-  final Dio dio;
+  final Dio dio = Dio(BaseOptions(
+    baseUrl: Environment.apiUrl,
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+  ));
   final KeyValueStorageService storageService;
 
   GeofenceDatasourceImpl({
     required this.storageService,
     Dio? dio,
-  }) : dio = dio ?? Dio(BaseOptions(
-          baseUrl: Environment.apiUrl,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        ));
+  }) {
+    print("GeofenceDatasourceImpl - baseUrl: ${this.dio.options.baseUrl}");
+  }
 
   @override
   Future<void> createGeofence(Geofence geofence) async {
@@ -28,26 +27,31 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
         data: GeofenceMapper.toJson(geofence),
       );
     } on DioException catch (e) {
-      throw Exception('Error creating geofence: ${e.response?.data ?? e.message}');
+      throw Exception(
+          'Error creating geofence: ${e.response?.data ?? e.message}');
     }
   }
 
   @override
-  Future<List<Geofence>> fetchGeofences() async {
+  Future<List<Geofence>> fetchGeofences(selectedDeviceRecordId) async {
     try {
       final token = await storageService.getValue<String>('token');
+
       if (token == null) throw Exception('Token not found');
 
       final response = await dio.get(
-        '/geo-fences',
+        '/devices/$selectedDeviceRecordId/geo-fences',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
+
+      print(response.data);
 
       return (response.data as List)
           .map((data) => GeofenceMapper.fromJson(data))
           .toList();
     } on DioException catch (e) {
-      throw Exception('Error fetching geofences: ${e.response?.data ?? e.message}');
+      throw Exception(
+          'Error fetching geofences: ${e.response?.data ?? e.message}');
     }
   }
 }
