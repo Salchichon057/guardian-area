@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
-import 'package:guardian_area/features/geofences/presentation/widgets/geofences_map_widget.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:latlong2/latlong.dart';
+import '../providers/map_provider.dart';
+import '../../domain/entities/geofence.dart';
+import '../widgets/geofences_map_widget.dart';
 
-class GeofenceDetailsScreen extends StatefulWidget {
+class GeofenceDetailsScreen extends ConsumerStatefulWidget {
   final Geofence geofence;
 
   const GeofenceDetailsScreen({super.key, required this.geofence});
@@ -11,16 +14,22 @@ class GeofenceDetailsScreen extends StatefulWidget {
   GeofenceDetailsScreenState createState() => GeofenceDetailsScreenState();
 }
 
-class GeofenceDetailsScreenState extends State<GeofenceDetailsScreen> {
+class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
   late TextEditingController _nameController;
   bool _isEditing = false;
-  late Geofence _tempGeofence;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: widget.geofence.name);
-    _tempGeofence = widget.geofence.copyWith();
+
+    // Inicializar los puntos en el mapProvider
+    final initialPoints = widget.geofence.coordinates
+        .map((coord) => LatLng(coord.latitude, coord.longitude))
+        .toList();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(mapProvider).initializePoints(initialPoints);
+    });
   }
 
   @override
@@ -31,48 +40,38 @@ class GeofenceDetailsScreenState extends State<GeofenceDetailsScreen> {
 
   void _toggleEditing() {
     setState(() {
-      if (_isEditing) {
-        // Restablecer valores originales si se cancela la edición
-        _tempGeofence = widget.geofence.copyWith();
-        _nameController.text = widget.geofence.name; // Restablecer el texto del controlador
-      }
       _isEditing = !_isEditing;
     });
   }
 
   void _saveChanges() {
     setState(() {
-      // Actualizar los valores de _tempGeofence con el nombre actual
-      _tempGeofence = _tempGeofence.copyWith(
+      // Usar mapProvider para obtener los puntos actualizados
+      final mapNotifier = ref.read(mapProvider);
+      final updatedCoordinates = mapNotifier.geofencePoints
+          .map((point) =>
+              Coordinate(latitude: point.latitude, longitude: point.longitude))
+          .toList();
+
+      // Crear una copia actualizada de Geofence usando copyWith
+      widget.geofence.copyWith(
         name: _nameController.text,
-        coordinates: List.from(_tempGeofence.coordinates),
+        coordinates: updatedCoordinates,
       );
-      _isEditing = false;
 
-      // Aquí podrías llamar a un método para guardar la geocerca en la base de datos o proveedor
-      // Ejemplo: provider.updateGeofence(_tempGeofence);
-    });
-  }
-
-  void _cancelEditing() {
-    setState(() {
-      // Restaurar valores originales usando copyWith
-      _tempGeofence = widget.geofence.copyWith();
-      _nameController.text = widget.geofence.name;
+      // Aquí puedes llamar al método para guardar updatedGeofence en la base de datos
       _isEditing = false;
     });
   }
 
   void _removeCoordinate(int index) {
-    setState(() {
-      // Crea una copia de las coordenadas sin el elemento eliminado
-      final newCoordinates = List<Coordinate>.from(_tempGeofence.coordinates)..removeAt(index);
-      _tempGeofence = _tempGeofence.copyWith(coordinates: newCoordinates);
-    });
+    ref.read(mapProvider).removeGeofencePoint(index);
   }
 
   @override
   Widget build(BuildContext context) {
+    final mapNotifier = ref.watch(mapProvider);
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -85,35 +84,34 @@ class GeofenceDetailsScreenState extends State<GeofenceDetailsScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Widget del mapa
-            GeofenceMapWidget(geofence: _tempGeofence, isEditable: _isEditing),
+            GeofenceMapWidget(
+              geofence: widget.geofence,
+              isEditable: _isEditing,
+            ),
             const SizedBox(height: 20),
-
-            // Campo del nombre de la geocerca
             TextField(
               controller: _nameController,
               enabled: _isEditing,
-              decoration: const InputDecoration(
-                labelText: 'Name',
-                border: OutlineInputBorder(),
-              ),
-              onChanged: (value) {
-                _tempGeofence = _tempGeofence.copyWith(name: value);
-              },
+              decoration: const InputDecoration(labelText: 'Name'),
             ),
             const SizedBox(height: 20),
-
-            // Botones de acción
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   if (_isEditing)
                     ElevatedButton(
-                      onPressed: _cancelEditing,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.grey,
-                      ),
+                      onPressed: () {
+                        setState(() {
+                          _isEditing = false;
+                          _nameController.text = widget.geofence.name;
+                          ref.read(mapProvider).initializePoints(widget
+                              .geofence.coordinates
+                              .map((coord) =>
+                                  LatLng(coord.latitude, coord.longitude))
+                              .toList());
+                        });
+                      },
                       child: const Text('Cancel'),
                     ),
                   const SizedBox(width: 10),
@@ -125,53 +123,42 @@ class GeofenceDetailsScreenState extends State<GeofenceDetailsScreen> {
               ),
             ),
             const SizedBox(height: 20),
-
-            // Tabla de coordenadas en modo edición
-            if (_isEditing) _buildCoordinatesTable(),
+            if (_isEditing) _buildCoordinatesTable(mapNotifier),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildCoordinatesTable() {
+  Widget _buildCoordinatesTable(MapNotifier mapNotifier) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Coordinates:',
-          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-        ),
+        const Text('Coordinates:',
+            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
         const SizedBox(height: 10),
         ListView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          itemCount: _tempGeofence.coordinates.length,
+          itemCount: mapNotifier.geofencePoints.length,
           itemBuilder: (context, index) {
-            return _buildCoordinateRow(index);
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Row(
+                children: [
+                  Expanded(
+                      child: Text('Coord ${index + 1}',
+                          style: const TextStyle(fontSize: 16))),
+                  TextButton(
+                    onPressed: () => _removeCoordinate(index),
+                    child: const Text('Eliminate'),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ],
-    );
-  }
-
-  Widget _buildCoordinateRow(int index) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              'Coord ${index + 1}',
-              style: const TextStyle(fontSize: 16),
-            ),
-          ),
-          TextButton(
-            onPressed: () => _removeCoordinate(index),
-            child: const Text('Eliminate'),
-          ),
-        ],
-      ),
     );
   }
 }
