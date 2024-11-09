@@ -12,6 +12,23 @@ class Geofence {
     required this.coordinates,
     required this.guardianAreaDeviceRecordId,
   });
+  
+  Geofence copyWith({
+    int? id,
+    String? name,
+    String? geoFenceStatus,
+    List<Coordinate>? coordinates,
+    String? guardianAreaDeviceRecordId,
+  }) {
+    return Geofence(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      geoFenceStatus: geoFenceStatus ?? this.geoFenceStatus,
+      coordinates: coordinates ?? List.from(this.coordinates),
+      guardianAreaDeviceRecordId:
+          guardianAreaDeviceRecordId ?? this.guardianAreaDeviceRecordId,
+    );
+  }
 }
 
 class Coordinate {
