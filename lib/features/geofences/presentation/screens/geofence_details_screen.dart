@@ -46,20 +46,16 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
 
   void _saveChanges() {
     setState(() {
-      // Usar mapProvider para obtener los puntos actualizados
       final mapNotifier = ref.read(mapProvider);
       final updatedCoordinates = mapNotifier.geofencePoints
           .map((point) =>
               Coordinate(latitude: point.latitude, longitude: point.longitude))
           .toList();
 
-      // Crear una copia actualizada de Geofence usando copyWith
       widget.geofence.copyWith(
         name: _nameController.text,
         coordinates: updatedCoordinates,
       );
-
-      // Aquí puedes llamar al método para guardar updatedGeofence en la base de datos
       _isEditing = false;
     });
   }
