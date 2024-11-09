@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:guardian_area/features/geofences/presentation/providers/geofence_provider.dart';
 import 'package:guardian_area/features/geofences/presentation/widgets/geofence_card.dart';
 
@@ -14,7 +15,6 @@ class GeofencesScreenState extends ConsumerState<GeofencesScreen> {
   @override
   void initState() {
     super.initState();
-    // Ejecutar la carga de geocercas después de que se haya construido el árbol de widgets
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(geofenceProvider.notifier).loadGeofences();
     });
@@ -67,14 +67,9 @@ class GeofencesScreenState extends ConsumerState<GeofencesScreen> {
                       final geofence = geofenceState.geofences[index];
                       return GestureDetector(
                         onTap: () {
-                          // Navigator.push(
-                          //   context,
-                          //   MaterialPageRoute(
-                          //     builder: (context) => GeofenceDetailScreen(
-                          //       geofence: geofence,
-                          //     ),
-                          //   ),
-                          // );
+                          // Navega a la pantalla de detalles y pasa el objeto `geofence` completo.
+                          context.go('/geofences/detail/${geofence.id}',
+                              extra: geofence);
                         },
                         child: GeofenceCard(geofence: geofence),
                       );
