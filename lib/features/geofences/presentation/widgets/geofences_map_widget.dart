@@ -3,8 +3,10 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:guardian_area/config/consts/map_token.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../providers/map_provider.dart';
 
-class GeofenceMapWidget extends StatelessWidget {
+class GeofenceMapWidget extends ConsumerWidget {
   final Geofence geofence;
   final bool isEditable;
 
@@ -15,10 +17,14 @@ class GeofenceMapWidget extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    final coordinates = geofence.coordinates
-        .map((coord) => LatLng(coord.latitude, coord.longitude))
-        .toList();
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mapNotifier = ref.watch(mapProvider);
+
+    final coordinates = mapNotifier.geofencePoints.isNotEmpty
+        ? mapNotifier.geofencePoints
+        : geofence.coordinates
+            .map((coord) => LatLng(coord.latitude, coord.longitude))
+            .toList();
 
     final cameraFit = CameraFit.coordinates(
       coordinates: coordinates,
@@ -43,9 +49,9 @@ class GeofenceMapWidget extends StatelessWidget {
           return FlutterMap(
             options: MapOptions(
               initialCameraFit: cameraFit,
-              onTap: isEditable
+              onTap: isEditable && coordinates.length < 4
                   ? (tapPosition, point) {
-                      // TODO: Lógica adicional para cuando el mapa está en modo editable
+                      ref.read(mapProvider).addGeofencePoint(point);
                     }
                   : null,
               interactionOptions: InteractionOptions(
@@ -73,14 +79,31 @@ class GeofenceMapWidget extends StatelessWidget {
               ),
               MarkerLayer(
                 markers: coordinates
-                    .map((point) => Marker(
-                          point: point,
-                          width: 20,
-                          height: 20,
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.red,
-                            size: 20,
+                    .asMap()
+                    .entries
+                    .map((entry) => Marker(
+                          point: entry.value,
+                          width: 30,
+                          height: 30,
+                          child: FittedBox(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.location_on,
+                                  color: Colors.red,
+                                  size: 30,
+                                ),
+                                Text(
+                                  '${entry.key + 1}',
+                                  style: const TextStyle(
+                                    fontSize: 15,
+                                    color: Colors.black,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ),
                           ),
                         ))
                     .toList(),
