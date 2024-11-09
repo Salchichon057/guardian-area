@@ -7,15 +7,21 @@ class GeofencesScreen extends ConsumerStatefulWidget {
   const GeofencesScreen({super.key});
 
   @override
-  // ignore: library_private_types_in_public_api
-  _GeofencesScreenState createState() => _GeofencesScreenState();
+  GeofencesScreenState createState() => GeofencesScreenState();
 }
 
-class _GeofencesScreenState extends ConsumerState<GeofencesScreen> {
+class GeofencesScreenState extends ConsumerState<GeofencesScreen> {
   @override
   void initState() {
     super.initState();
-    Future.microtask(() => ref.read(geofenceProvider.notifier).loadGeofences());
+    // Ejecutar la carga de geocercas después de que se haya construido el árbol de widgets
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(geofenceProvider.notifier).loadGeofences();
+    });
+  }
+
+  Future<void> _refreshGeofences() async {
+    await ref.read(geofenceProvider.notifier).loadGeofences();
   }
 
   @override
@@ -24,17 +30,57 @@ class _GeofencesScreenState extends ConsumerState<GeofencesScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('List of geofences', style: TextStyle(fontSize: 20),),
+        title: const Text(
+          'List of geofences',
+          style: TextStyle(fontSize: 20),
+        ),
       ),
       body: geofenceState.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: geofenceState.geofences.length,
-              itemBuilder: (context, index) {
-                final geofence = geofenceState.geofences[index];
-                return GeofenceCard(geofence: geofence);
-              },
-            ),
+          : geofenceState.geofences.isEmpty
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.location_off,
+                        size: 80,
+                        color: Colors.grey,
+                      ),
+                      SizedBox(height: 16),
+                      Text(
+                        'Geofences not found',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                )
+              : RefreshIndicator(
+                  onRefresh: _refreshGeofences,
+                  color: const Color(0xFF08273A),
+                  child: ListView.builder(
+                    itemCount: geofenceState.geofences.length,
+                    itemBuilder: (context, index) {
+                      final geofence = geofenceState.geofences[index];
+                      return GestureDetector(
+                        onTap: () {
+                          // Navigator.push(
+                          //   context,
+                          //   MaterialPageRoute(
+                          //     builder: (context) => GeofenceDetailScreen(
+                          //       geofence: geofence,
+                          //     ),
+                          //   ),
+                          // );
+                        },
+                        child: GeofenceCard(geofence: geofence),
+                      );
+                    },
+                  ),
+                ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           // Acción para agregar una nueva geocerca
