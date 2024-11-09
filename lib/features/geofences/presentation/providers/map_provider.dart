@@ -7,18 +7,20 @@ class MapNotifier extends ChangeNotifier {
   final MapController mapController;
   List<LatLng> geofencePoints = [];
 
+  final Distance distance = const Distance();
+
   MapNotifier({required this.mapController});
 
-  // Inicializar con puntos iniciales si existen
   void initializePoints(List<LatLng> initialPoints) {
     geofencePoints = List.from(initialPoints);
+    _sortPointsByClosestPath();
     notifyListeners();
   }
 
-  // Añadir punto de geocerca
   void addGeofencePoint(LatLng point) {
-    if (geofencePoints.length < 5) {
+    if (geofencePoints.length < 4) {
       geofencePoints.add(point);
+      _sortPointsByClosestPath();
       notifyListeners();
     }
   }
@@ -27,8 +29,29 @@ class MapNotifier extends ChangeNotifier {
   void removeGeofencePoint(int index) {
     if (index >= 0 && index < geofencePoints.length) {
       geofencePoints.removeAt(index);
+      _sortPointsByClosestPath();
       notifyListeners();
     }
+  }
+
+  void _sortPointsByClosestPath() {
+    if (geofencePoints.length <= 1) return;
+
+    List<LatLng> sortedPoints = [];
+    Set<LatLng> remainingPoints = Set.from(geofencePoints);
+    LatLng currentPoint = remainingPoints.first;
+    sortedPoints.add(currentPoint);
+    remainingPoints.remove(currentPoint);
+
+    while (remainingPoints.isNotEmpty) {
+      LatLng closestPoint = remainingPoints.reduce((a, b) =>
+          distance(currentPoint, a) < distance(currentPoint, b) ? a : b);
+      sortedPoints.add(closestPoint);
+      remainingPoints.remove(closestPoint);
+      currentPoint = closestPoint;
+    }
+
+    geofencePoints = sortedPoints;
   }
 
   // Mover el mapa a la ubicación actual
