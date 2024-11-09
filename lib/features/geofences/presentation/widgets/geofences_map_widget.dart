@@ -83,27 +83,30 @@ class GeofenceMapWidget extends ConsumerWidget {
                     .entries
                     .map((entry) => Marker(
                           point: entry.value,
-                          width: 30,
-                          height: 30,
-                          child: FittedBox(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.location_on,
-                                  color: Colors.red,
-                                  size: 30,
-                                ),
-                                Text(
+                          width: 40,
+                          height: 40,
+                          child: Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              const Icon(
+                                Icons.circle,
+                                color: Colors.red,
+                                size: 10,
+                              ),
+                              Positioned(
+                                left:
+                                    2,
+                                child: Text(
                                   '${entry.key + 1}',
                                   style: const TextStyle(
-                                    fontSize: 15,
-                                    color: Colors.black,
+                                    fontSize: 14,
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold,
                                   ),
                                   overflow: TextOverflow.ellipsis,
                                 ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ))
                     .toList(),
