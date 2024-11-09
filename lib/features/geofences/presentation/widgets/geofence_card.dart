@@ -11,18 +11,17 @@ class GeofenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Convertir las coordenadas de la geocerca a una lista de LatLng
     final coordinates = geofence.coordinates
         .map((coord) => LatLng(coord.latitude, coord.longitude))
         .toList();
 
-    // Crear CameraFit utilizando FitCoordinates para que ajuste todas las coordenadas
+    // !CameraFit -> FitCoordinates: ajusta todas las coordenadas
     final cameraFit = CameraFit.coordinates(
       coordinates: coordinates,
-      padding: const EdgeInsets.all(8), // Espacio alrededor
-      maxZoom: 17.0, // Límite de zoom máximo
-      minZoom: 10.0, // Límite de zoom mínimo
-      forceIntegerZoomLevel: false, // Usar niveles de zoom fraccionados
+      padding: const EdgeInsets.all(8),
+      maxZoom: 17.0,
+      minZoom: 10.0,
+      forceIntegerZoomLevel: false,
     );
 
     return Card(
@@ -30,7 +29,6 @@ class GeofenceCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Usamos FutureBuilder para cargar el token de Mapbox
           FutureBuilder<String>(
             future: MapToken.getMapToken(),
             builder: (context, snapshot) {
@@ -53,9 +51,9 @@ class GeofenceCard extends StatelessWidget {
                 child: FlutterMap(
                   options: MapOptions(
                     initialCameraFit:
-                        cameraFit, // Ajuste de cámara con las coordenadas
+                        cameraFit,
                     interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.none, // Desactivar interacciones
+                      flags: InteractiveFlag.none,
                     ),
                   ),
                   children: [
@@ -67,7 +65,6 @@ class GeofenceCard extends StatelessWidget {
                         'id': 'mapbox.streets'
                       },
                     ),
-                    // Dibuja el área de la geocerca usando PolygonLayer
                     PolygonLayer(
                       polygons: [
                         Polygon(
@@ -78,7 +75,6 @@ class GeofenceCard extends StatelessWidget {
                         ),
                       ],
                     ),
-                    // Coloca un marcador en cada coordenada de la geocerca
                     MarkerLayer(
                       markers: coordinates
                           .map((point) => Marker(
@@ -111,7 +107,7 @@ class GeofenceCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Status: ${geofence.status}',
+                  'Status: ${geofence.geoFenceStatus}',
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],
