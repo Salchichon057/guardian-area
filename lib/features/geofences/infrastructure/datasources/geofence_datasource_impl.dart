@@ -1,45 +1,65 @@
 import 'package:dio/dio.dart';
-import 'package:guardian_area/config/consts/environmets.dart';
+import 'package:guardian_area/config/consts/environments.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/domain/datasources/geofence_datasource.dart';
 import 'package:guardian_area/features/geofences/infrastructure/mappers/geofence_mapper.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';
 
 class GeofenceDatasourceImpl implements GeofenceDatasource {
-  final Dio dio;
+  final Dio dio = Dio(BaseOptions(
+    baseUrl: Environment.apiUrl,
+    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+  ));
   final KeyValueStorageService storageService;
 
   GeofenceDatasourceImpl({
     required this.storageService,
     Dio? dio,
-  }) : dio = dio ?? Dio(BaseOptions(
-          baseUrl: Environment.apiUrl,
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-        ));
+  });
 
   @override
-  Future<void> createGeofence(Geofence geofence) async {
+  Future<Geofence> createGeofence(Geofence geofence) async {
     try {
-      await dio.post(
+      final token = await storageService.getValue<String>('token');
+
+      if (token == null) throw Exception('Token not found');
+
+      final data = {
+        'name': geofence.name,
+        'geoFenceStatus': geofence.geoFenceStatus,
+        'coordinates': geofence.coordinates
+            .map((coord) => {
+                  'latitude': coord.latitude,
+                  'longitude': coord.longitude,
+                })
+            .toList(),
+        'guardianAreaDeviceRecordId': geofence.guardianAreaDeviceRecordId,
+      };
+
+      final response = await dio.post(
         '/geo-fences',
-        data: GeofenceMapper.toJson(geofence),
+        data: data,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
       );
+
+      return GeofenceMapper.fromJson(response.data);
     } on DioException catch (e) {
-      throw Exception('Error creating geofence: ${e.response?.data ?? e.message}');
+      throw Exception(
+          'Error creating geofence: ${e.response?.data ?? e.message}');
     }
   }
 
   @override
-  Future<List<Geofence>> fetchGeofences() async {
+  Future<List<Geofence>> fetchGeofences(selectedDeviceRecordId) async {
     try {
       final token = await storageService.getValue<String>('token');
+
       if (token == null) throw Exception('Token not found');
 
       final response = await dio.get(
-        '/geo-fences',
+        '/devices/$selectedDeviceRecordId/geo-fences',
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
@@ -47,7 +67,41 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
           .map((data) => GeofenceMapper.fromJson(data))
           .toList();
     } on DioException catch (e) {
-      throw Exception('Error fetching geofences: ${e.response?.data ?? e.message}');
+      throw Exception(
+          'Error fetching geofences: ${e.response?.data ?? e.message}');
+    }
+  }
+
+  @override
+  Future<Geofence> updateGeofence(Geofence geofence) async {
+    try {
+      final token = await storageService.getValue<String>('token');
+      if (token == null) throw Exception('Token not found');
+
+      final data = {
+        'name': geofence.name,
+        'geoFenceStatus': geofence.geoFenceStatus,
+        'coordinates': geofence.coordinates
+            .map((coord) => {
+                  'latitude': coord.latitude,
+                  'longitude': coord.longitude,
+                })
+            .toList(),
+        'guardianAreaDeviceRecordId': geofence.guardianAreaDeviceRecordId,
+      };
+
+      final response = await dio.put(
+        '/geo-fences/${geofence.id}',
+        data: data,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
+      );
+
+      return GeofenceMapper.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(
+          'Error updating geofence: ${e.response?.data ?? e.message}');
     }
   }
 }

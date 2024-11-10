@@ -6,13 +6,13 @@ import 'package:guardian_area/features/auth/presentation/providers/auth_provider
 import 'package:guardian_area/features/auth/presentation/screens/screens.dart';
 import 'package:guardian_area/features/chat/presentation/screens/screens.dart';
 import 'package:guardian_area/features/devices/presentation/screens/screens.dart';
+import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/presentation/screens/screens.dart';
 import 'package:guardian_area/features/home/presentation/screens/screens.dart';
 import 'package:guardian_area/features/navigation/presentation/screens/main_screen.dart';
 import 'package:guardian_area/features/profile/presentation/screens/screens.dart';
 import 'package:guardian_area/features/settings/presentation/screens/screens.dart';
 import 'package:guardian_area/features/vital-signs/presentation/screens/screens.dart';
-
 
 final goRouterProvider = Provider((ref) {
   final goRouterNotifier = ref.read(goRouterNotifierProvider);
@@ -33,8 +33,6 @@ final goRouterProvider = Provider((ref) {
         path: '/register',
         builder: (context, state) => const RegisterScreen(),
       ),
-
-      //! ShellRoute principal con BottomNavigationBar
       ShellRoute(
         builder: (context, state, child) => MainScreen(child: child),
         routes: [
@@ -59,6 +57,23 @@ final goRouterProvider = Provider((ref) {
             path: '/geofences',
             builder: (context, state) => const GeofencesScreen(),
           ),
+          GoRoute(
+            path: '/geofences/create',
+            builder: (context, state) => const GeofenceDetailsScreen(
+              isEditMode: false,
+            ),
+          ),
+          GoRoute(
+            path:
+                '/geofences/detail/:id',
+            builder: (context, state) {
+              final geofence = state.extra as Geofence;
+              return GeofenceDetailsScreen(
+                geofence: geofence,
+                isEditMode: true,
+              );
+            },
+          ),
 
           //! AppNavigator Routes
           GoRoute(
@@ -77,8 +92,8 @@ final goRouterProvider = Provider((ref) {
       ),
     ],
     redirect: (context, state) {
-      final isGoingTo = state.matchedLocation;
       final authStatus = goRouterNotifier.authStatus;
+      final isGoingTo = state.matchedLocation;
 
       if (isGoingTo == '/splash' && authStatus == AuthStatus.checking) {
         return null;

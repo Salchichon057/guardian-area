@@ -1,4 +1,3 @@
-// geofence_repository_impl.dart
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/domain/repositories/geofence_repository.dart';
 import 'package:guardian_area/features/geofences/domain/datasources/geofence_datasource.dart';
@@ -9,12 +8,17 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
   GeofenceRepositoryImpl({required this.datasource});
 
   @override
-  Future<void> createGeofence(Geofence geofence) async {
-    await datasource.createGeofence(geofence);
+  Future<Geofence> createGeofence(Geofence geofence) async {
+    return await datasource.createGeofence(geofence);
   }
 
   @override
-  Future<List<Geofence>> fetchGeofences() async {
-    return await datasource.fetchGeofences();
+  Future<List<Geofence>> fetchGeofences(selectedDeviceRecordId) async {
+    return await datasource.fetchGeofences(selectedDeviceRecordId);
+  }
+
+  @override
+  Future<Geofence> updateGeofence(Geofence geofence) async {
+    return  await datasource.updateGeofence(geofence);
   }
 }

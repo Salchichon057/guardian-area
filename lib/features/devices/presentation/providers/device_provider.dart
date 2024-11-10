@@ -28,16 +28,9 @@ class DeviceNotifier extends StateNotifier<AsyncValue<List<Device>>> {
 
   Future<void> selectDevice(Device device) async {
     try {
-      // Guardamos el deviceRecordId en el almacenamiento para usarlo en la pantalla
       await storageService.setKeyValue<String>(
           'selectedDeviceRecordId', device.guardianAreaDeviceRecordId);
       await storageService.setKeyValue<String>('selectedApiKey', device.apiKey);
-      // No actualizamos la lista de dispositivos; el estilo se aplica en la pantalla directamente
-
-      // final selectedDeviceId = await getSelectedDeviceId();
-      // final selectedApiKey = await storageService.getValue<String>('selectedApiKey');
-
-      // print('Device selected: ${device.nickname}, ${selectedDeviceId}, ${selectedApiKey}');
     } catch (e) {
       print("Error al seleccionar el dispositivo: $e");
     }

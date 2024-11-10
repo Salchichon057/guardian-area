@@ -11,16 +11,24 @@ class GeofenceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final coordinates = geofence.coordinates.isNotEmpty
-        ? LatLng(geofence.coordinates.first.latitude, geofence.coordinates.first.longitude)
-        : const LatLng(0.0, 0.0);
+    final coordinates = geofence.coordinates
+        .map((coord) => LatLng(coord.latitude, coord.longitude))
+        .toList();
+
+    // !CameraFit -> FitCoordinates: ajusta todas las coordenadas
+    final cameraFit = CameraFit.coordinates(
+      coordinates: coordinates,
+      padding: const EdgeInsets.all(8),
+      maxZoom: 17.0,
+      minZoom: 10.0,
+      forceIntegerZoomLevel: false,
+    );
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Usamos FutureBuilder para cargar el token de Mapbox
           FutureBuilder<String>(
             future: MapToken.getMapToken(),
             builder: (context, snapshot) {
@@ -42,33 +50,43 @@ class GeofenceCard extends StatelessWidget {
                 height: 150,
                 child: FlutterMap(
                   options: MapOptions(
-                    initialCenter: coordinates,
-                    initialZoom: 17.0,
+                    initialCameraFit: cameraFit,
                     interactionOptions: const InteractionOptions(
-                      flags: InteractiveFlag.none, // Desactivar interacciones
+                      flags: InteractiveFlag.none,
                     ),
                   ),
                   children: [
                     TileLayer(
-                      urlTemplate: 'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$mapboxToken',
+                      urlTemplate:
+                          'https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token=$mapboxToken',
                       additionalOptions: {
                         'accessToken': mapboxToken,
                         'id': 'mapbox.streets'
                       },
                     ),
-                    MarkerLayer(
-                      markers: [
-                        Marker(
-                          point: coordinates,
-                          width: 40,
-                          height: 40,
-                          child: const Icon(
-                            Icons.location_on,
-                            color: Colors.red,
-                            size: 40,
-                          ),
+                    PolygonLayer(
+                      polygons: [
+                        Polygon(
+                          points: coordinates,
+                          borderColor: Colors.blue,
+                          borderStrokeWidth: 2,
+                          color: Colors.blue.withOpacity(0.2),
                         ),
                       ],
+                    ),
+                    MarkerLayer(
+                      markers: coordinates
+                          .map((point) => Marker(
+                                point: point,
+                                width: 20,
+                                height: 20,
+                                child: const Icon(
+                                  Icons.circle,
+                                  color: Colors.red,
+                                  size: 13,
+                                ),
+                              ))
+                          .toList(),
                     ),
                   ],
                 ),
@@ -88,7 +106,7 @@ class GeofenceCard extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  'Status: ${geofence.status}',
+                  'Status: ${geofence.geoFenceStatus}',
                   style: const TextStyle(fontSize: 14, color: Colors.grey),
                 ),
               ],

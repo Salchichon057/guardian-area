@@ -1,8 +1,8 @@
-// geofence_provider.dart
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/domain/repositories/geofence_repository.dart';
 import 'package:guardian_area/features/geofences/presentation/providers/geofence_repository_provider.dart';
+import 'package:guardian_area/shared/infrastructure/services/key_value_service.dart';
 
 class GeofenceState {
   final List<Geofence> geofences;
@@ -30,48 +30,22 @@ class GeofenceState {
 
 class GeofenceNotifier extends StateNotifier<GeofenceState> {
   final GeofenceRepository repository;
+  final KeyValueStorageService storageService;
 
-  GeofenceNotifier(this.repository) : super(GeofenceState()) {
+  GeofenceNotifier(this.repository, this.storageService)
+      : super(GeofenceState()) {
     loadGeofences();
   }
 
-  // Future<void> loadGeofences() async {
-  //   state = state.copyWith(isLoading: true);
-  //   try {
-  //     final geofences = await repository.fetchGeofences();
-  //     state = state.copyWith(geofences: geofences, isLoading: false);
-  //   } catch (e) {
-  //     state = state.copyWith(errorMessage: e.toString(), isLoading: false);
-  //   }
-  // }
   Future<void> loadGeofences() async {
     state = state.copyWith(isLoading: true);
     try {
-      await Future.delayed(const Duration(seconds: 2));
-      final simulatedGeofences = [
-        Geofence(
-          name: 'Geofence 01',
-          status: 'Active',
-          coordinates: [
-            Coordinate(latitude: -12.0464, longitude: -77.0428)
-          ],
-          guardianAreaDeviceRecordId: 'device1',
-        ),
-        Geofence(
-          name: 'Geofence 02',
-          status: 'Active',
-          coordinates: [Coordinate(latitude: -12.0464, longitude: -77.0428)],
-          guardianAreaDeviceRecordId: 'device2',
-        ),
-        Geofence(
-          name: 'Geofence 03',
-          status: 'Active',
-          coordinates: [Coordinate(latitude: -12.0464, longitude: -77.0428)],
-          guardianAreaDeviceRecordId: 'device3',
-        ),
-      ];
+      final selectedDeviceRecordId =
+          await storageService.getValue<String>('selectedDeviceRecordId');
+      if (selectedDeviceRecordId == null) throw Exception('No device selected');
 
-      state = state.copyWith(geofences: simulatedGeofences, isLoading: false);
+      final geofences = await repository.fetchGeofences(selectedDeviceRecordId);
+      state = state.copyWith(geofences: geofences, isLoading: false);
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString(), isLoading: false);
     }
@@ -80,7 +54,16 @@ class GeofenceNotifier extends StateNotifier<GeofenceState> {
   Future<void> addGeofence(Geofence geofence) async {
     try {
       await repository.createGeofence(geofence);
-      loadGeofences(); // Recargar geocercas después de añadir
+      await loadGeofences();
+    } catch (e) {
+      state = state.copyWith(errorMessage: e.toString());
+    }
+  }
+
+  Future<void> updateGeofence(Geofence geofence) async {
+    try {
+      await repository.updateGeofence(geofence);
+      await loadGeofences();
     } catch (e) {
       state = state.copyWith(errorMessage: e.toString());
     }
@@ -90,5 +73,6 @@ class GeofenceNotifier extends StateNotifier<GeofenceState> {
 final geofenceProvider =
     StateNotifierProvider<GeofenceNotifier, GeofenceState>((ref) {
   final repository = ref.read(geofenceRepositoryProvider);
-  return GeofenceNotifier(repository);
+  final storageService = ref.watch(keyValueStorageServiceProvider);
+  return GeofenceNotifier(repository, storageService);
 });
