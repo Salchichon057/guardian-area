@@ -36,7 +36,7 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
         'guardianAreaDeviceRecordId': geofence.guardianAreaDeviceRecordId,
       };
 
-      final response = await dio.put(
+      final response = await dio.post(
         '/geo-fences',
         data: data,
         options: Options(
