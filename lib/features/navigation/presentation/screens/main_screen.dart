@@ -4,7 +4,7 @@ import 'package:guardian_area/features/navigation/presentation/widgets/custom_ap
 import 'package:guardian_area/features/navigation/presentation/widgets/custom_bottom_nav_bar.dart';
 
 class MainScreen extends ConsumerWidget {
-  final Widget child; // Agregamos child como parámetro
+  final Widget child;
 
   const MainScreen({super.key, required this.child});
 
