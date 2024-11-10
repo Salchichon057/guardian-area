@@ -1,9 +1,11 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
+import 'package:guardian_area/features/geofences/presentation/providers/providers.dart';
+import 'package:guardian_area/features/geofences/presentation/widgets/geofences_map_widget.dart';
 import 'package:latlong2/latlong.dart';
-import '../providers/map_provider.dart';
-import '../../domain/entities/geofence.dart';
-import '../widgets/geofences_map_widget.dart';
 
 class GeofenceDetailsScreen extends ConsumerStatefulWidget {
   final Geofence geofence;
@@ -23,7 +25,6 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
     super.initState();
     _nameController = TextEditingController(text: widget.geofence.name);
 
-    // Inicializar los puntos en el mapProvider
     final initialPoints = widget.geofence.coordinates
         .map((coord) => LatLng(coord.latitude, coord.longitude))
         .toList();
@@ -44,20 +45,34 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
     });
   }
 
-  void _saveChanges() {
-    setState(() {
-      final mapNotifier = ref.read(mapProvider);
-      final updatedCoordinates = mapNotifier.geofencePoints
-          .map((point) =>
-              Coordinate(latitude: point.latitude, longitude: point.longitude))
-          .toList();
+  Future<void> _saveChanges() async {
+    final mapNotifier = ref.read(mapProvider);
+    final updatedCoordinates = mapNotifier.geofencePoints
+        .map((point) =>
+            Coordinate(latitude: point.latitude, longitude: point.longitude))
+        .toList();
 
-      widget.geofence.copyWith(
-        name: _nameController.text,
-        coordinates: updatedCoordinates,
+    final updatedGeofence = widget.geofence.copyWith(
+      name: _nameController.text,
+      coordinates: updatedCoordinates,
+    );
+
+    try {
+      await ref.read(geofenceProvider.notifier).updateGeofence(updatedGeofence);
+      setState(() {
+        _isEditing = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Geofence updated successfully')),
       );
-      _isEditing = false;
-    });
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to update geofence: $error'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _removeCoordinate(int index) {
@@ -143,8 +158,9 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
               child: Row(
                 children: [
                   Expanded(
-                      child: Text('Coord ${index + 1}',
-                          style: const TextStyle(fontSize: 16))),
+                    child: Text('Coord ${index + 1}',
+                        style: const TextStyle(fontSize: 16)),
+                  ),
                   TextButton(
                     onPressed: () => _removeCoordinate(index),
                     child: const Text('Eliminate'),
