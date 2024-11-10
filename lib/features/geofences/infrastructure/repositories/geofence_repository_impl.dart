@@ -16,4 +16,9 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
   Future<List<Geofence>> fetchGeofences(selectedDeviceRecordId) async {
     return await datasource.fetchGeofences(selectedDeviceRecordId);
   }
+  
+  @override
+  Future<Geofence> updateGeofence(Geofence geofence) {
+    return datasource.updateGeofence(geofence);
+  }
 }
