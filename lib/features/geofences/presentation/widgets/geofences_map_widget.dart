@@ -7,12 +7,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/map_provider.dart';
 
 class GeofenceMapWidget extends ConsumerWidget {
-  final Geofence geofence;
+  final Geofence? geofence;
   final bool isEditable;
+
+  static const LatLng defaultLocation = LatLng(-12.0464, -77.0428);
 
   const GeofenceMapWidget({
     super.key,
-    required this.geofence,
+    this.geofence,
     required this.isEditable,
   });
 
@@ -22,9 +24,10 @@ class GeofenceMapWidget extends ConsumerWidget {
 
     final coordinates = mapNotifier.geofencePoints.isNotEmpty
         ? mapNotifier.geofencePoints
-        : geofence.coordinates
-            .map((coord) => LatLng(coord.latitude, coord.longitude))
-            .toList();
+        : (geofence?.coordinates
+                .map((coord) => LatLng(coord.latitude, coord.longitude))
+                .toList() ??
+            [defaultLocation]);
 
     final cameraFit = CameraFit.coordinates(
       coordinates: coordinates,
