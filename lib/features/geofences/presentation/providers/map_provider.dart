@@ -30,7 +30,6 @@ class MapNotifier extends ChangeNotifier {
     }
   }
 
-  // Ordenar puntos solo en la inicialización para establecer un orden inicial
   void _sortPointsByClosestPath() {
     if (geofencePoints.length <= 1) return;
 
@@ -54,13 +53,11 @@ class MapNotifier extends ChangeNotifier {
     geofencePoints = sortedPoints;
   }
 
-  // Mover el mapa a la ubicación actual
   void moveToLocation(LatLng position) {
     mapController.move(position, 15);
   }
 }
 
-// Provider para el MapNotifier
 final mapProvider = ChangeNotifierProvider<MapNotifier>((ref) {
   return MapNotifier(mapController: MapController());
 });
