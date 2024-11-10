@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/presentation/providers/providers.dart';
 import 'package:guardian_area/features/geofences/presentation/widgets/geofences_map_widget.dart';
@@ -63,18 +64,23 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
         _isEditing = false;
       });
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Geofence updated successfully')),
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Geofence updated successfully')),
+          );
+          context.go('/geofences');
+        });
       }
     } catch (error) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to update geofence: $error'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to update geofence: $error'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        });
       }
     }
   }
