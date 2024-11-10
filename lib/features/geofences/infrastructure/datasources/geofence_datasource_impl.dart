@@ -18,12 +18,33 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
   });
 
   @override
-  Future<void> createGeofence(Geofence geofence) async {
+  Future<Geofence> createGeofence(Geofence geofence) async {
     try {
-      await dio.post(
+      final token = await storageService.getValue<String>('token');
+
+      if (token == null) throw Exception('Token not found');
+
+      final data = {
+        'name': geofence.name,
+        'geoFenceStatus': geofence.geoFenceStatus,
+        'coordinates': geofence.coordinates
+            .map((coord) => {
+                  'latitude': coord.latitude,
+                  'longitude': coord.longitude,
+                })
+            .toList(),
+        'guardianAreaDeviceRecordId': geofence.guardianAreaDeviceRecordId,
+      };
+
+      final response = await dio.put(
         '/geo-fences',
-        data: GeofenceMapper.toJson(geofence),
+        data: data,
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
       );
+
+      return GeofenceMapper.fromJson(response.data);
     } on DioException catch (e) {
       throw Exception(
           'Error creating geofence: ${e.response?.data ?? e.message}');
