@@ -44,14 +44,47 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      print(response.data);
-
       return (response.data as List)
           .map((data) => GeofenceMapper.fromJson(data))
           .toList();
     } on DioException catch (e) {
       throw Exception(
           'Error fetching geofences: ${e.response?.data ?? e.message}');
+    }
+  }
+
+  @override
+  Future<Geofence> updateGeofence(Geofence geofence) async {
+    try {
+      final token = await storageService.getValue<String>('token');
+
+      if (token == null) throw Exception('Token not found');
+
+      final data = {
+        'name': geofence.name,
+        'geoFenceStatus': geofence.geoFenceStatus,
+        'coordinates': geofence.coordinates
+            .map((coord) => {
+                  'latitude': coord.latitude,
+                  'longitude': coord.longitude,
+                })
+            .toList(),
+        'guardianAreaDeviceRecordId': geofence.guardianAreaDeviceRecordId,
+      };
+
+      final response = await dio.put(
+        '/geo-fences/${geofence.id}',
+        queryParameters: {'id': geofence.id},
+        data: data,
+        options: Options(headers: {'Authorization ': 'Bearer $token'}),
+      );
+
+      print(response.data);
+
+      return GeofenceMapper.fromJson(response.data);
+    } on DioException catch (e) {
+      throw Exception(
+          'Error updating geofence: ${e.response?.data ?? e.message}');
     }
   }
 }
