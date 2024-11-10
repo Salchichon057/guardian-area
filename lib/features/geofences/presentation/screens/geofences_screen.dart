@@ -67,7 +67,6 @@ class GeofencesScreenState extends ConsumerState<GeofencesScreen> {
                       final geofence = geofenceState.geofences[index];
                       return GestureDetector(
                         onTap: () {
-                          // Navega a la pantalla de detalles y pasa el objeto `geofence` completo.
                           context.go('/geofences/detail/${geofence.id}',
                               extra: geofence);
                         },
@@ -78,7 +77,7 @@ class GeofencesScreenState extends ConsumerState<GeofencesScreen> {
                 ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          // Acción para agregar una nueva geocerca
+          context.go('/geofences/create');
         },
         child: const Icon(Icons.add),
       ),

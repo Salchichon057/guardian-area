@@ -58,11 +58,20 @@ final goRouterProvider = Provider((ref) {
             builder: (context, state) => const GeofencesScreen(),
           ),
           GoRoute(
-            path: '/geofences/detail/:id',
+            path: '/geofences/create',
+            builder: (context, state) => const GeofenceDetailsScreen(
+              isEditMode: false,
+            ),
+          ),
+          GoRoute(
+            path:
+                '/geofences/detail/:id',
             builder: (context, state) {
               final geofence = state.extra as Geofence;
-
-              return GeofenceDetailsScreen(geofence: geofence);
+              return GeofenceDetailsScreen(
+                geofence: geofence,
+                isEditMode: true,
+              );
             },
           ),
 
