@@ -62,16 +62,20 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
       setState(() {
         _isEditing = false;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Geofence updated successfully')),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Geofence updated successfully')),
+        );
+      }
     } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to update geofence: $error'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to update geofence: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 
@@ -82,6 +86,19 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
   @override
   Widget build(BuildContext context) {
     final mapNotifier = ref.watch(mapProvider);
+
+    ref.listen<GeofenceState>(geofenceProvider, (previous, next) {
+      if (next.errorMessage != null && next.errorMessage!.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(next.errorMessage!),
+              backgroundColor: Colors.red,
+            ),
+          );
+        });
+      }
+    });
 
     return Scaffold(
       appBar: AppBar(
