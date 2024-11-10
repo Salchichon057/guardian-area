@@ -15,9 +15,7 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
   GeofenceDatasourceImpl({
     required this.storageService,
     Dio? dio,
-  }) {
-    print("GeofenceDatasourceImpl - baseUrl: ${this.dio.options.baseUrl}");
-  }
+  });
 
   @override
   Future<void> createGeofence(Geofence geofence) async {
@@ -57,7 +55,6 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
   Future<Geofence> updateGeofence(Geofence geofence) async {
     try {
       final token = await storageService.getValue<String>('token');
-
       if (token == null) throw Exception('Token not found');
 
       final data = {
@@ -74,12 +71,11 @@ class GeofenceDatasourceImpl implements GeofenceDatasource {
 
       final response = await dio.put(
         '/geo-fences/${geofence.id}',
-        queryParameters: {'id': geofence.id},
         data: data,
-        options: Options(headers: {'Authorization ': 'Bearer $token'}),
+        options: Options(
+          headers: {'Authorization': 'Bearer $token'},
+        ),
       );
-
-      print(response.data);
 
       return GeofenceMapper.fromJson(response.data);
     } on DioException catch (e) {
