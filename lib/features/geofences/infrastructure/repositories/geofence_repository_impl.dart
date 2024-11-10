@@ -8,17 +8,17 @@ class GeofenceRepositoryImpl implements GeofenceRepository {
   GeofenceRepositoryImpl({required this.datasource});
 
   @override
-  Future<void> createGeofence(Geofence geofence) async {
-    await datasource.createGeofence(geofence);
+  Future<Geofence> createGeofence(Geofence geofence) async {
+    return await datasource.createGeofence(geofence);
   }
 
   @override
   Future<List<Geofence>> fetchGeofences(selectedDeviceRecordId) async {
     return await datasource.fetchGeofences(selectedDeviceRecordId);
   }
-  
+
   @override
-  Future<Geofence> updateGeofence(Geofence geofence) {
-    return datasource.updateGeofence(geofence);
+  Future<Geofence> updateGeofence(Geofence geofence) async {
+    return  await datasource.updateGeofence(geofence);
   }
 }
