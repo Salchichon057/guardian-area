@@ -50,8 +50,7 @@ class GeofenceCard extends StatelessWidget {
                 height: 150,
                 child: FlutterMap(
                   options: MapOptions(
-                    initialCameraFit:
-                        cameraFit,
+                    initialCameraFit: cameraFit,
                     interactionOptions: const InteractionOptions(
                       flags: InteractiveFlag.none,
                     ),
@@ -82,9 +81,9 @@ class GeofenceCard extends StatelessWidget {
                                 width: 20,
                                 height: 20,
                                 child: const Icon(
-                                  Icons.location_on,
+                                  Icons.circle,
                                   color: Colors.red,
-                                  size: 20,
+                                  size: 13,
                                 ),
                               ))
                           .toList(),

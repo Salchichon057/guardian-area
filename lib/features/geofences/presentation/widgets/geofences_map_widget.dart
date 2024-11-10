@@ -42,7 +42,7 @@ class GeofenceMapWidget extends ConsumerWidget {
             return const Center(child: CircularProgressIndicator());
           }
           if (!snapshot.hasData || snapshot.data == 'No token found') {
-            return const Center(child: Text("Token no encontrado"));
+            return const Center(child: Text("Token not found"));
           }
 
           final mapboxToken = snapshot.data!;
@@ -94,8 +94,7 @@ class GeofenceMapWidget extends ConsumerWidget {
                                 size: 10,
                               ),
                               Positioned(
-                                left:
-                                    2,
+                                left: 2,
                                 child: Text(
                                   '${entry.key + 1}',
                                   style: const TextStyle(
