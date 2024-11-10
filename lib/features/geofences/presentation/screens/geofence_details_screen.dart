@@ -108,6 +108,12 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios),
+          onPressed: () {
+            context.go('/geofences');
+          },
+        ),
         title: Text(
           'Geo-fence: ${widget.geofence.name}',
           style: const TextStyle(fontSize: 18),
@@ -168,8 +174,10 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Coordinates:',
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+        const Text(
+          'Coordinates:',
+          style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+        ),
         const SizedBox(height: 10),
         ListView.builder(
           shrinkWrap: true,
@@ -181,8 +189,10 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
               child: Row(
                 children: [
                   Expanded(
-                    child: Text('Coord ${index + 1}',
-                        style: const TextStyle(fontSize: 16)),
+                    child: Text(
+                      'Coord ${index + 1}',
+                      style: const TextStyle(fontSize: 16),
+                    ),
                   ),
                   TextButton(
                     onPressed: () => _removeCoordinate(index),
