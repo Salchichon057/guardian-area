@@ -6,12 +6,18 @@ import 'package:go_router/go_router.dart';
 import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/presentation/providers/providers.dart';
 import 'package:guardian_area/features/geofences/presentation/widgets/geofences_map_widget.dart';
+import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
 import 'package:latlong2/latlong.dart';
 
 class GeofenceDetailsScreen extends ConsumerStatefulWidget {
-  final Geofence geofence;
+  final Geofence? geofence;
+  final bool isEditMode;
 
-  const GeofenceDetailsScreen({super.key, required this.geofence});
+  const GeofenceDetailsScreen({
+    super.key,
+    this.geofence,
+    this.isEditMode = false,
+  });
 
   @override
   GeofenceDetailsScreenState createState() => GeofenceDetailsScreenState();
@@ -20,15 +26,18 @@ class GeofenceDetailsScreen extends ConsumerStatefulWidget {
 class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
   late TextEditingController _nameController;
   bool _isEditing = false;
+  String _geoFenceStatus = "ACTIVE";
 
   @override
   void initState() {
     super.initState();
-    _nameController = TextEditingController(text: widget.geofence.name);
+    _nameController = TextEditingController(text: widget.geofence?.name ?? "");
+    _geoFenceStatus = widget.geofence?.geoFenceStatus ?? "ACTIVE";
 
-    final initialPoints = widget.geofence.coordinates
-        .map((coord) => LatLng(coord.latitude, coord.longitude))
-        .toList();
+    final initialPoints = widget.geofence?.coordinates
+            .map((coord) => LatLng(coord.latitude, coord.longitude))
+            .toList() ??
+        [];
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(mapProvider).initializePoints(initialPoints);
     });
@@ -48,39 +57,63 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
 
   Future<void> _saveChanges() async {
     final mapNotifier = ref.read(mapProvider);
-    final updatedCoordinates = mapNotifier.geofencePoints
+    final coordinates = mapNotifier.geofencePoints
         .map((point) =>
             Coordinate(latitude: point.latitude, longitude: point.longitude))
         .toList();
 
-    final updatedGeofence = widget.geofence.copyWith(
-      name: _nameController.text,
-      coordinates: updatedCoordinates,
-    );
+    final storageService = ref.read(keyValueStorageServiceProvider);
+    final deviceRecordId =
+        await storageService.getValue<String>('selectedDeviceRecordId');
+    if (deviceRecordId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Device ID not found. Please select a device."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
+    final geofence = widget.isEditMode
+        ? widget.geofence!.copyWith(
+            name: _nameController.text,
+            coordinates: coordinates,
+            geoFenceStatus: _geoFenceStatus,
+          )
+        : Geofence(
+            id: 0,
+            name: _nameController.text,
+            geoFenceStatus: _geoFenceStatus,
+            coordinates: coordinates,
+            guardianAreaDeviceRecordId: deviceRecordId,
+          );
 
     try {
-      await ref.read(geofenceProvider.notifier).updateGeofence(updatedGeofence);
-      setState(() {
-        _isEditing = false;
-      });
+      if (widget.isEditMode) {
+        await ref.read(geofenceProvider.notifier).updateGeofence(geofence);
+      } else {
+        await ref.read(geofenceProvider.notifier).addGeofence(geofence);
+      }
+
       if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Geofence updated successfully')),
-          );
-          context.go('/geofences');
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+              content: Text(widget.isEditMode
+                  ? 'Geofence updated successfully'
+                  : 'Geofence created successfully')),
+        );
+        context.go('/geofences');
       }
     } catch (error) {
       if (mounted) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to update geofence: $error'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+                'Failed to ${widget.isEditMode ? "update" : "create"} geofence: $error'),
+            backgroundColor: Colors.red,
+          ),
+        );
       }
     }
   }
@@ -115,7 +148,7 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
           },
         ),
         title: Text(
-          'Geo-fence: ${widget.geofence.name}',
+          widget.isEditMode ? 'Edit Geofence' : 'Create Geofence',
           style: const TextStyle(fontSize: 18),
         ),
       ),
@@ -126,44 +159,78 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
           children: [
             GeofenceMapWidget(
               geofence: widget.geofence,
-              isEditable: _isEditing,
+              isEditable: _isEditing || !widget.isEditMode,
             ),
             const SizedBox(height: 20),
             TextField(
               controller: _nameController,
-              enabled: _isEditing,
+              enabled: _isEditing || !widget.isEditMode,
               decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            const SizedBox(height: 20),
+            DropdownButtonFormField<String>(
+              value: _geoFenceStatus,
+              items: const [
+                DropdownMenuItem(
+                  value: 'ACTIVE',
+                  child: Text('Active',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.normal)),
+                ),
+                DropdownMenuItem(
+                  value: 'INACTIVE',
+                  child: Text('Inactive',
+                      style: TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.normal)),
+                ),
+              ],
+              onChanged: _isEditing || !widget.isEditMode
+                  ? (value) {
+                      setState(() {
+                        _geoFenceStatus = value!;
+                      });
+                    }
+                  : null,
+              decoration: const InputDecoration(labelText: 'Geofence Status'),
             ),
             const SizedBox(height: 20),
             Center(
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  if (_isEditing)
+                  if (_isEditing || !widget.isEditMode)
                     ElevatedButton(
                       onPressed: () {
                         setState(() {
                           _isEditing = false;
-                          _nameController.text = widget.geofence.name;
+                          _nameController.text = widget.geofence?.name ?? '';
+                          _geoFenceStatus =
+                              widget.geofence?.geoFenceStatus ?? "ACTIVE";
                           ref.read(mapProvider).initializePoints(widget
-                              .geofence.coordinates
-                              .map((coord) =>
-                                  LatLng(coord.latitude, coord.longitude))
-                              .toList());
+                                  .geofence?.coordinates
+                                  .map((coord) =>
+                                      LatLng(coord.latitude, coord.longitude))
+                                  .toList() ??
+                              []);
                         });
                       },
                       child: const Text('Cancel'),
                     ),
                   const SizedBox(width: 10),
                   ElevatedButton(
-                    onPressed: _isEditing ? _saveChanges : _toggleEditing,
-                    child: Text(_isEditing ? 'Save changes' : 'Edit geofence'),
+                    onPressed: _isEditing || !widget.isEditMode
+                        ? _saveChanges
+                        : _toggleEditing,
+                    child: Text(_isEditing || !widget.isEditMode
+                        ? 'Save changes'
+                        : 'Edit geofence'),
                   ),
                 ],
               ),
             ),
             const SizedBox(height: 20),
-            if (_isEditing) _buildCoordinatesTable(mapNotifier),
+            if (_isEditing || !widget.isEditMode)
+              _buildCoordinatesTable(mapNotifier),
           ],
         ),
       ),
