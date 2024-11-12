@@ -64,12 +64,6 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
-            // !Dirección del usuario
-            
-            Text(
-              'Av. Fake 123, Lima, Peru',
-              style: TextStyle(color: Colors.grey[700]),
-            ),
             const SizedBox(height: 24),
 
             ElevatedButton(
