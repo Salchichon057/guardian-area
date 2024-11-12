@@ -24,7 +24,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   void initState() {
     super.initState();
-    _initializeControllers(); // Inicializa controladores con valores en blanco
+    _initializeControllers();
   }
 
   void _initializeControllers() {
@@ -88,7 +88,11 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('Settings'),
+          title: const Text('Settings',
+              style: TextStyle(
+                  color: Color(0xFF08273A),
+                  fontWeight: FontWeight.bold,
+                  fontSize: 18)),
         ),
         body: Center(
           child: SingleChildScrollView(
@@ -192,9 +196,19 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const SizedBox(height: 20),
 
-                // Botón de Guardar Cambios
                 ElevatedButton(
                   onPressed: () => _showSaveChangesModal(context),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF08273A),
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32,
+                      vertical: 12,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
                   child: const Text('Save Changes'),
                 ),
               ],
@@ -205,13 +219,12 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  // Función para construir cada campo de texto regular
   Widget _buildTextField({
     required String label,
     required TextEditingController controller,
     required IconData icon,
     required bool isObscure,
-    bool isEnabled = true, // Para controlar si el campo está habilitado
+    bool isEnabled = true,
   }) {
     return TextFormField(
       controller: controller,
@@ -227,7 +240,6 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  // Función para construir campos de contraseña con el botón de visibilidad
   Widget _buildPasswordField({
     required String label,
     required TextEditingController controller,
