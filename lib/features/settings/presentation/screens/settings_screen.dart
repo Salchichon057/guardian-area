@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:go_router/go_router.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
 import 'package:guardian_area/features/settings/presentation/widgets/save_change_modal.dart';
+import 'package:guardian_area/shared/infrastructure/inputs/inputs.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -13,27 +15,16 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _obscurePassword = true;
+  bool _obscureNewPassword = true;
   bool _obscureConfirmPassword = true;
 
-  late TextEditingController _emailController;
-  late TextEditingController _passwordController;
-  late TextEditingController _confirmPasswordController;
-  late TextEditingController _nameController;
-  late TextEditingController _surnameController;
-
-  @override
-  void initState() {
-    super.initState();
-    _initializeControllers();
-  }
-
-  void _initializeControllers() {
-    _emailController = TextEditingController();
-    _passwordController = TextEditingController();
-    _confirmPasswordController = TextEditingController();
-    _nameController = TextEditingController();
-    _surnameController = TextEditingController();
-  }
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _newPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _surnameController = TextEditingController();
 
   @override
   void didChangeDependencies() {
@@ -48,17 +39,36 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
     }
   }
 
-  void _resetFields() {
-    final authState = ref.read(authProvider);
-    final userProfile = authState.userProfile;
+  void _showSnackBar(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).hideCurrentSnackBar();
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
+  }
 
-    if (userProfile != null) {
-      _emailController.text = userProfile.email;
-      _passwordController.clear();
-      _confirmPasswordController.clear();
-      _nameController.text = userProfile.firstName;
-      _surnameController.text = userProfile.lastName;
+  void _validateAndSave() {
+    final newPassword = Password.dirty(_newPasswordController.text);
+    final confirmPassword = _confirmPasswordController.text;
+
+    if (newPassword.error == PasswordError.empty) {
+      _showSnackBar(context, 'New Password is required');
+      return;
     }
+    if (newPassword.error == PasswordError.length) {
+      _showSnackBar(context, 'New Password must be at least 6 characters');
+      return;
+    }
+    if (newPassword.error == PasswordError.format) {
+      _showSnackBar(context,
+          'New Password must contain uppercase, lowercase, and a number');
+      return;
+    }
+
+    if (newPassword.value != confirmPassword) {
+      _showSnackBar(context, 'New Password and Confirm Password do not match');
+      return;
+    }
+
+    _showSaveChangesModal(context);
   }
 
   void _showSaveChangesModal(BuildContext context) {
@@ -68,9 +78,26 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
         onCancel: () {
           _resetFields();
         },
-        onSave: () {},
+        onSave: () {
+          // TODO: Implementar el onSave cuando el Backend esté listo
+          context.pop();
+        },
       ),
     );
+  }
+
+  void _resetFields() {
+    final authState = ref.read(authProvider);
+    final userProfile = authState.userProfile;
+
+    if (userProfile != null) {
+      _emailController.text = userProfile.email;
+      _passwordController.clear();
+      _newPasswordController.clear();
+      _confirmPasswordController.clear();
+      _nameController.text = userProfile.firstName;
+      _surnameController.text = userProfile.lastName;
+    }
   }
 
   @override
@@ -99,7 +126,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                // !Selector de imagen de perfil
+                // Selector de imagen de perfil
                 Stack(
                   children: [
                     CircleAvatar(
@@ -120,7 +147,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                       right: 0,
                       child: InkWell(
                         onTap: () {
-                          // TODO: Implementar selección de imagen
+                          // Implementar selección de imagen
                         },
                         child: Container(
                           padding: const EdgeInsets.all(6),
@@ -139,7 +166,6 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                 ),
                 const SizedBox(height: 16),
 
-                // !Email
                 _buildTextField(
                   label: 'Email',
                   controller: _emailController,
@@ -161,11 +187,11 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 10),
                 _buildPasswordField(
                   label: 'New Password',
-                  controller: _passwordController,
-                  isObscure: _obscurePassword,
+                  controller: _newPasswordController,
+                  isObscure: _obscureNewPassword,
                   onToggleVisibility: () {
                     setState(() {
-                      _obscurePassword = !_obscurePassword;
+                      _obscureNewPassword = !_obscureNewPassword;
                     });
                   },
                 ),
@@ -197,7 +223,7 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
                 const SizedBox(height: 20),
 
                 ElevatedButton(
-                  onPressed: () => _showSaveChangesModal(context),
+                  onPressed: _validateAndSave,
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF08273A),
                     foregroundColor: Colors.white,
@@ -262,5 +288,16 @@ class SettingsScreenState extends ConsumerState<SettingsScreen> {
         ),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    _newPasswordController.dispose();
+    _confirmPasswordController.dispose();
+    _nameController.dispose();
+    _surnameController.dispose();
+    super.dispose();
   }
 }
