@@ -45,17 +45,27 @@ class ProfileScreen extends ConsumerWidget {
               ),
             ),
 
+            Text(
+              userProfile.email,
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
             TextButton(
               onPressed: () {
                 context.go('/settings');
               },
               child: const Text(
                 'Edit Profile',
-                style: TextStyle(color: Colors.blue),
+                style: TextStyle(
+                    color: Colors.blue, decoration: TextDecoration.underline),
               ),
             ),
 
             // !Dirección del usuario
+            
             Text(
               'Av. Fake 123, Lima, Peru',
               style: TextStyle(color: Colors.grey[700]),
