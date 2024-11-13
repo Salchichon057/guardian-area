@@ -1,23 +1,186 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:guardian_area/features/vital-signs/domain/entities/health.dart';
+import 'package:guardian_area/features/vital-signs/presentation/providers/health_provider.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:intl/intl.dart';
 
-class VitalSignsScreen extends StatelessWidget {
+class VitalSignsScreen extends ConsumerWidget {
   const VitalSignsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return const Center(
+  Widget build(BuildContext context, WidgetRef ref) {
+    final healthDataAsync = ref.watch(healthProvider);
+
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text(
+            'Health Statistics',
+            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+          bottom: const TabBar(
+            labelColor: Color(0xFF08273A),
+            unselectedLabelColor: Colors.black54,
+            indicatorColor: Color(0xFF08273A),
+            tabs: [
+              Tab(text: 'Heart Rate'),
+              Tab(text: 'Oxygenation'),
+            ],
+          ),
+        ),
+        body: healthDataAsync.when(
+          data: (healthData) => TabBarView(
+            children: [
+              _buildChart(healthData, isHeartRate: true),
+              _buildChart(healthData, isHeartRate: false),
+            ],
+          ),
+          loading: () => const Center(child: CircularProgressIndicator()),
+          error: (error, _) => Center(child: Text('Error: $error')),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChart(List<Health> data, {required bool isHeartRate}) {
+    // Formateamos las fechas de los puntos de datos
+    final dayLabels = data
+        .map((e) =>
+            "${DateFormat('EEE').format(e.date)}\n${DateFormat('dd').format(e.date)}")
+        .toList();
+
+    final values = isHeartRate
+        ? data.map((e) => e.avgBpm).toList()
+        : data.map((e) => e.avgSpo2).toList();
+
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Vital Signs Screen',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ), 
+            'Evolution of ${isHeartRate ? "Heart Rate" : "Oxygenation"} during the days of the month',
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          ),
+          const SizedBox(height: 20),
+          AspectRatio(
+            aspectRatio: 1.5,
+            child: LineChart(
+              LineChartData(
+                minX: 0,
+                maxX: (values.length - 1).toDouble(),
+                minY: values.reduce((a, b) => a < b ? a : b) * 0.9,
+                maxY: values.reduce((a, b) => a > b ? a : b) * 1.1,
+                gridData: const FlGridData(show: true, drawVerticalLine: false),
+                borderData: FlBorderData(
+                  show: true,
+                  border: Border(
+                    left: BorderSide(color: Colors.grey.shade300),
+                    bottom: BorderSide(color: Colors.grey.shade300),
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  topTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(
+                      sideTitles: SideTitles(showTitles: false)),
+                  bottomTitles: AxisTitles(
+                    axisNameWidget: const Text("Days of the month"),
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      interval: values.length > 5
+                          ? (values.length / 5).floorToDouble()
+                          : 1, // Muestra máximo 5 etiquetas
+                      getTitlesWidget: (value, meta) {
+                        final index = value.toInt();
+                        if (index >= 0 && index < dayLabels.length) {
+                          return Text(
+                            dayLabels[index],
+                            style: const TextStyle(fontSize: 10),
+                            textAlign: TextAlign.center,
+                          );
+                        }
+                        return const Text('');
+                      },
+                    ),
+                  ),
+                  leftTitles: const AxisTitles(
+                    sideTitles: SideTitles(showTitles: true),
+                  ),
+                ),
+                lineBarsData: [
+                  LineChartBarData(
+                    spots: values
+                        .asMap()
+                        .entries
+                        .map((entry) =>
+                            FlSpot(entry.key.toDouble(), entry.value))
+                        .toList(),
+                    isCurved: false,
+                    dotData: const FlDotData(show: true),
+                    color: const Color(0xFF1E88E5),
+                    belowBarData: BarAreaData(
+                      show: true,
+                      color: const Color(0xFF1E88E5).withOpacity(0.3),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Expanded(
+            child: SingleChildScrollView(
+              child: _buildTips(isHeartRate),
+            ),
           ),
         ],
       ),
     );
+  }
+
+  Widget _buildTips(bool isHeartRate) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Tips according to ${isHeartRate ? 'Heart Rate' : 'Oxygenation'}:',
+          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        const SizedBox(height: 10),
+        ..._getTips(isHeartRate),
+      ],
+    );
+  }
+
+  List<Widget> _getTips(bool isHeartRate) {
+    final tips = isHeartRate
+        ? [
+            "70-80 bpm: Indicates a normal heart rate. Continue with your usual activities and maintain a balanced diet.",
+            "81-90 bpm: A slight increase in heart rate. It may be beneficial to perform relaxation exercises or meditation.",
+            "91-100 bpm: High heart rate. Consider consulting a healthcare professional for a more detailed evaluation.",
+          ]
+        : [
+            "95-100%: Normal oxygen level. There are no worries. Continue with your usual activities and stay hydrated.",
+            "91-94%: Slight decrease in oxygen levels. It may be helpful to rest and breathe fresh air. If levels remain low, it is advisable to consult a health professional.",
+            "Less than 90%: Hypoxemia. Low oxygen level which may indicate a significant health problem. It is necessary to consult a doctor immediately or go to a healthcare facility.",
+          ];
+
+    return tips
+        .map((tip) => Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.circle, size: 8, color: Color(0xFF1E88E5)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                      child: Text(tip, style: const TextStyle(fontSize: 14))),
+                ],
+              ),
+            ))
+        .toList();
   }
 }
