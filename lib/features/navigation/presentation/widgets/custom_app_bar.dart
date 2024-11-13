@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
-import 'package:go_router/go_router.dart'; // Import GoRouter
+import 'package:go_router/go_router.dart';
 
 class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
@@ -53,10 +53,17 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                     ),
                   ),
                 ),
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
                 onSelected: (value) {
                   if (value == 'settings') {
-                    context.go(
-                        '/settings'); // Use context.go for settings navigation
+                    context.go('/settings');
+                  } else if (value == 'profile') {
+                    if (authState.userProfile != null) {
+                      context.go('/profile');
+                    }
                   } else if (value == 'logout') {
                     ref.read(authProvider.notifier).logout();
                   }
@@ -64,22 +71,40 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                 itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
                   PopupMenuItem<String>(
                     value: 'profile',
-                    child: Text(userName,
-                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    child: Text(
+                      userName,
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black87,
+                        fontSize: 16,
+                      ),
+                    ),
                   ),
                   const PopupMenuDivider(),
                   const PopupMenuItem<String>(
                     value: 'settings',
                     child: ListTile(
-                      leading: Icon(Icons.settings, color: Colors.black54),
-                      title: Text('Settings'),
+                      leading: Icon(Icons.settings, color: Colors.blueGrey),
+                      title: Text(
+                        'Settings',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                   const PopupMenuItem<String>(
                     value: 'logout',
                     child: ListTile(
-                      leading: Icon(Icons.logout, color: Colors.black54),
-                      title: Text('Logout'),
+                      leading: Icon(Icons.logout, color: Colors.redAccent),
+                      title: Text(
+                        'Logout',
+                        style: TextStyle(
+                          color: Colors.black87,
+                          fontSize: 14,
+                        ),
+                      ),
                     ),
                   ),
                 ],

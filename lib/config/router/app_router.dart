@@ -57,6 +57,8 @@ final goRouterProvider = Provider((ref) {
             path: '/geofences',
             builder: (context, state) => const GeofencesScreen(),
           ),
+
+          // !Into geofences
           GoRoute(
             path: '/geofences/create',
             builder: (context, state) => const GeofenceDetailsScreen(

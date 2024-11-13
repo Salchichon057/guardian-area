@@ -152,86 +152,91 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
           style: const TextStyle(fontSize: 18),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            GeofenceMapWidget(
-              geofence: widget.geofence,
-              isEditable: _isEditing || !widget.isEditMode,
-            ),
-            const SizedBox(height: 20),
-            TextField(
-              controller: _nameController,
-              enabled: _isEditing || !widget.isEditMode,
-              decoration: const InputDecoration(labelText: 'Name'),
-            ),
-            const SizedBox(height: 20),
-            DropdownButtonFormField<String>(
-              value: _geoFenceStatus,
-              items: const [
-                DropdownMenuItem(
-                  value: 'ACTIVE',
-                  child: Text('Active',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.normal)),
-                ),
-                DropdownMenuItem(
-                  value: 'INACTIVE',
-                  child: Text('Inactive',
-                      style: TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.normal)),
-                ),
-              ],
-              onChanged: _isEditing || !widget.isEditMode
-                  ? (value) {
-                      setState(() {
-                        _geoFenceStatus = value!;
-                      });
-                    }
-                  : null,
-              decoration: const InputDecoration(labelText: 'Geofence Status'),
-            ),
-            const SizedBox(height: 20),
-            Center(
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (_isEditing || !widget.isEditMode)
-                    ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          _isEditing = false;
-                          _nameController.text = widget.geofence?.name ?? '';
-                          _geoFenceStatus =
-                              widget.geofence?.geoFenceStatus ?? "ACTIVE";
-                          ref.read(mapProvider).initializePoints(widget
-                                  .geofence?.coordinates
-                                  .map((coord) =>
-                                      LatLng(coord.latitude, coord.longitude))
-                                  .toList() ??
-                              []);
-                        });
-                      },
-                      child: const Text('Cancel'),
-                    ),
-                  const SizedBox(width: 10),
-                  ElevatedButton(
-                    onPressed: _isEditing || !widget.isEditMode
-                        ? _saveChanges
-                        : _toggleEditing,
-                    child: Text(_isEditing || !widget.isEditMode
-                        ? 'Save changes'
-                        : 'Edit geofence'),
+      body: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).unfocus();
+        },
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              GeofenceMapWidget(
+                geofence: widget.geofence,
+                isEditable: _isEditing || !widget.isEditMode,
+              ),
+              const SizedBox(height: 20),
+              TextField(
+                controller: _nameController,
+                enabled: _isEditing || !widget.isEditMode,
+                decoration: const InputDecoration(labelText: 'Name'),
+              ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: _geoFenceStatus,
+                items: const [
+                  DropdownMenuItem(
+                    value: 'ACTIVE',
+                    child: Text('Active',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.normal)),
+                  ),
+                  DropdownMenuItem(
+                    value: 'INACTIVE',
+                    child: Text('Inactive',
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.normal)),
                   ),
                 ],
+                onChanged: _isEditing || !widget.isEditMode
+                    ? (value) {
+                        setState(() {
+                          _geoFenceStatus = value!;
+                        });
+                      }
+                    : null,
+                decoration: const InputDecoration(labelText: 'Geofence Status'),
               ),
-            ),
-            const SizedBox(height: 20),
-            if (_isEditing || !widget.isEditMode)
-              _buildCoordinatesTable(mapNotifier),
-          ],
+              const SizedBox(height: 20),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    if (_isEditing || !widget.isEditMode)
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            _isEditing = false;
+                            _nameController.text = widget.geofence?.name ?? '';
+                            _geoFenceStatus =
+                                widget.geofence?.geoFenceStatus ?? "ACTIVE";
+                            ref.read(mapProvider).initializePoints(widget
+                                    .geofence?.coordinates
+                                    .map((coord) =>
+                                        LatLng(coord.latitude, coord.longitude))
+                                    .toList() ??
+                                []);
+                          });
+                        },
+                        child: const Text('Cancel'),
+                      ),
+                    const SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: _isEditing || !widget.isEditMode
+                          ? _saveChanges
+                          : _toggleEditing,
+                      child: Text(_isEditing || !widget.isEditMode
+                          ? 'Save changes'
+                          : 'Edit geofence'),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 20),
+              if (_isEditing || !widget.isEditMode)
+                _buildCoordinatesTable(mapNotifier),
+            ],
+          ),
         ),
       ),
     );
