@@ -220,10 +220,26 @@ class VitalSignsScreen extends ConsumerWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Icon(Icons.circle, size: 8, color: Color(0xFF1E88E5)),
+                  Container(
+                    width: 15,
+                    height: 15,
+                    margin: const EdgeInsets.only(top: 4),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFE9F7FF),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: const Color(0xFF47A1DE),
+                        width: 2,
+                      ),
+                    ),
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
-                      child: Text(tip, style: const TextStyle(fontSize: 14))),
+                    child: Text(
+                      tip,
+                      style: const TextStyle(fontSize: 14),
+                    ),
+                  ),
                 ],
               ),
             ))
