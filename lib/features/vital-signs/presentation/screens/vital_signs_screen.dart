@@ -24,29 +24,39 @@ class VitalSignsScreen extends ConsumerWidget {
             preferredSize: const Size.fromHeight(50),
             child: Container(
               color: Colors.white,
-              child: Row(
-                children: [
-                  Expanded(
-                    child: TabBar(
-                      labelColor: Colors.white,
-                      unselectedLabelColor: const Color(0xFF08273A),
-                      indicator: BoxDecoration(
-                        color: const Color(
-                            0xFF08273A),
-                        borderRadius:
-                            BorderRadius.circular(10.0),
+              child: const TabBar(
+                isScrollable: false,
+                dividerColor: Color(0xFF08273A),
+                dividerHeight: 2,
+                labelColor: Colors.white,
+                unselectedLabelColor: Color(0xFF08273A),
+                indicator: BoxDecoration(
+                  color: Color(0xFF08273A),
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                ),
+                tabs: [
+                  Tab(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Center(
+                        child: Text('Heart Rate'),
                       ),
-                      labelPadding:
-                          const EdgeInsets.symmetric(horizontal: 16.0),
-                      tabs: const [
-                        Tab(text: 'Heart Rate'),
-                        Tab(text: 'Oxygenation'),
-                      ],
-                      labelStyle: const TextStyle(
-                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  Tab(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: Center(
+                        child: Text('Oxygenation'),
+                      ),
                     ),
                   ),
                 ],
+                labelStyle:
+                    TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ),
