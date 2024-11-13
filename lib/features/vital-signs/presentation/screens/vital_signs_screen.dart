@@ -20,15 +20,35 @@ class VitalSignsScreen extends ConsumerWidget {
             'Health Statistics',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
-          bottom: const TabBar(
-            labelColor: Color(0xFF08273A),
-            unselectedLabelColor: Colors.black54,
-            indicatorColor: Color(0xFF08273A),
-            tabs: [
-              Tab(text: 'Heart Rate',),
-              Tab(text: 'Oxygenation'),
-            ],
-            labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+          bottom: PreferredSize(
+            preferredSize: const Size.fromHeight(50),
+            child: Container(
+              color: Colors.white,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: TabBar(
+                      labelColor: Colors.white,
+                      unselectedLabelColor: const Color(0xFF08273A),
+                      indicator: BoxDecoration(
+                        color: const Color(
+                            0xFF08273A),
+                        borderRadius:
+                            BorderRadius.circular(10.0),
+                      ),
+                      labelPadding:
+                          const EdgeInsets.symmetric(horizontal: 16.0),
+                      tabs: const [
+                        Tab(text: 'Heart Rate'),
+                        Tab(text: 'Oxygenation'),
+                      ],
+                      labelStyle: const TextStyle(
+                          fontSize: 16, fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
         body: healthDataAsync.when(
