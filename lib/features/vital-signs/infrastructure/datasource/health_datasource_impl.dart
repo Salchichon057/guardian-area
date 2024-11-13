@@ -21,19 +21,18 @@ class HealthDatasourceImpl extends HealthDatasource {
   Future<List<Health>> getHealthData(String deviceRecordId) async {
     try {
       final token = await storageService.getValue<String>('token');
-      if (token == null) throw Exception('Token not found');
-
+      if (token == null || deviceRecordId.isEmpty) {
+        throw Exception('Token or Device ID not found');
+      }
       final response = await dio.get(
         '/devices/$deviceRecordId/health-measures-monthly-summary',
-        options: Options(
-          headers: {'Authorization': 'Bearer $token'},
-        ),
+        options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
-      final data = response.data as List<dynamic>;
-      return HealthMapper.fromJsonList(data);
+      return HealthMapper.fromJsonList(response.data as List<dynamic>);
     } on DioException catch (e) {
-      throw Exception('Failed to fetch health data: ${e.message}');
+      throw Exception(
+          'Error fetching health data: ${e.response?.data ?? e.message}');
     }
   }
 }
