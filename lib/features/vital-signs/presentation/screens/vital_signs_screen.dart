@@ -18,16 +18,17 @@ class VitalSignsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text(
             'Health Statistics',
-            style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           bottom: const TabBar(
             labelColor: Color(0xFF08273A),
             unselectedLabelColor: Colors.black54,
             indicatorColor: Color(0xFF08273A),
             tabs: [
-              Tab(text: 'Heart Rate'),
+              Tab(text: 'Heart Rate',),
               Tab(text: 'Oxygenation'),
             ],
+            labelStyle: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           ),
         ),
         body: healthDataAsync.when(
@@ -45,7 +46,6 @@ class VitalSignsScreen extends ConsumerWidget {
   }
 
   Widget _buildChart(List<Health> data, {required bool isHeartRate}) {
-    // Formateamos las fechas de los puntos de datos
     final dayLabels = data
         .map((e) =>
             "${DateFormat('EEE').format(e.date)}\n${DateFormat('dd').format(e.date)}")
@@ -71,8 +71,6 @@ class VitalSignsScreen extends ConsumerWidget {
               LineChartData(
                 minX: 0,
                 maxX: (values.length - 1).toDouble(),
-                minY: values.reduce((a, b) => a < b ? a : b) * 0.9,
-                maxY: values.reduce((a, b) => a > b ? a : b) * 1.1,
                 gridData: const FlGridData(show: true, drawVerticalLine: false),
                 borderData: FlBorderData(
                   show: true,
@@ -89,26 +87,26 @@ class VitalSignsScreen extends ConsumerWidget {
                   bottomTitles: AxisTitles(
                     axisNameWidget: const Padding(
                       padding: EdgeInsets.only(top: 16.0),
-                      child: Text("Days of the month"),
+                      child: Text(
+                        "Days of the month",
+                        style: TextStyle(fontSize: 12),
+                      ),
                     ),
                     sideTitles: SideTitles(
                       showTitles: true,
+                      reservedSize: 45,
                       interval: values.length > 5
                           ? (values.length / 5).floorToDouble()
-                          : 1, // Muestra máximo 5 etiquetas
-                      reservedSize: 48, // Espacio reservado para el eje X
+                          : 1,
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
                         if (index >= 0 && index < dayLabels.length) {
                           return Padding(
                             padding: const EdgeInsets.only(top: 4.0),
-                            child: RotatedBox(
-                              quarterTurns: 0,
-                              child: Text(
-                                dayLabels[index],
-                                style: const TextStyle(fontSize: 12),
-                                textAlign: TextAlign.center,
-                              ),
+                            child: Text(
+                              dayLabels[index],
+                              style: const TextStyle(fontSize: 12),
+                              textAlign: TextAlign.center,
                             ),
                           );
                         }
@@ -134,7 +132,14 @@ class VitalSignsScreen extends ConsumerWidget {
                     color: const Color(0xFF1E88E5),
                     belowBarData: BarAreaData(
                       show: true,
-                      color: const Color(0xFF1E88E5).withOpacity(0.3),
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF1E88E5).withOpacity(1),
+                          const Color(0xFF64B5F6).withOpacity(0.2),
+                        ],
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                      ),
                     ),
                   ),
                 ],
