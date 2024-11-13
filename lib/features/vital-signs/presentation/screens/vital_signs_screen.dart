@@ -87,19 +87,29 @@ class VitalSignsScreen extends ConsumerWidget {
                   rightTitles: const AxisTitles(
                       sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
-                    axisNameWidget: const Text("Days of the month"),
+                    axisNameWidget: const Padding(
+                      padding: EdgeInsets.only(top: 16.0),
+                      child: Text("Days of the month"),
+                    ),
                     sideTitles: SideTitles(
                       showTitles: true,
                       interval: values.length > 5
                           ? (values.length / 5).floorToDouble()
                           : 1, // Muestra máximo 5 etiquetas
+                      reservedSize: 48, // Espacio reservado para el eje X
                       getTitlesWidget: (value, meta) {
                         final index = value.toInt();
                         if (index >= 0 && index < dayLabels.length) {
-                          return Text(
-                            dayLabels[index],
-                            style: const TextStyle(fontSize: 10),
-                            textAlign: TextAlign.center,
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4.0),
+                            child: RotatedBox(
+                              quarterTurns: 0,
+                              child: Text(
+                                dayLabels[index],
+                                style: const TextStyle(fontSize: 12),
+                                textAlign: TextAlign.center,
+                              ),
+                            ),
                           );
                         }
                         return const Text('');
@@ -107,7 +117,8 @@ class VitalSignsScreen extends ConsumerWidget {
                     ),
                   ),
                   leftTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: true),
+                    sideTitles: SideTitles(
+                        showTitles: true, reservedSize: 48, interval: 10.0),
                   ),
                 ),
                 lineBarsData: [
