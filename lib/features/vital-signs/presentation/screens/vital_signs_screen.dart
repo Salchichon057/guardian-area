@@ -18,7 +18,7 @@ class VitalSignsScreen extends ConsumerWidget {
         appBar: AppBar(
           title: const Text(
             'Health Statistics',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           bottom: PreferredSize(
             preferredSize: const Size.fromHeight(50),
