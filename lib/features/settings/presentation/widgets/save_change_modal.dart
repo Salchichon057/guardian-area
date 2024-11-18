@@ -27,7 +27,7 @@ class SaveChangesModal extends StatelessWidget {
         TextButton(
           onPressed: () {
             onSave();
-            context.pop();
+            context.go('/settings');
           },
           child: const Text('Save'),
         ),
