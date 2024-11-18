@@ -16,18 +16,15 @@ class HealthStreamDatasourceImpl implements HealthStreamDatasource {
 
     // Log de conexión
     print('Connected to WebSocket room: $roomId');
+    print('WebSocket URL: ${channel}');
 
     return channel.stream.map((event) {
-      // Log de datos recibidos
-      print('Received data from WebSocket: $event');
-
-      // Decodifica los datos y convierte a una entidad `HealthMeasure`
       final jsonData = jsonDecode(event as String) as Map<String, dynamic>;
-      return HealthMeasure.fromJson(jsonData);
+      return HealthMeasure.fromJson(
+          jsonData); // Convierte el mapa a HealthMeasure
     }).handleError((error) {
-      // Log de errores
       print('WebSocket error: $error');
-      throw Exception('WebSocket connection error: $error');
-    }).asBroadcastStream(); // Permite múltiples listeners al Stream.
+      return HealthMeasure(bpm: 0, spo2: 0);
+    }).asBroadcastStream();
   }
 }
