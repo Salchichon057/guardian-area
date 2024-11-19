@@ -2,53 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
-import 'package:guardian_area/features/navigation/infrastructure/datasources/health_stream_datasource_impl.dart';
-import 'package:guardian_area/features/navigation/domain/entities/health_measure.dart';
 import 'package:guardian_area/features/navigation/presentation/widgets/health_stats_bar.dart';
+import 'package:guardian_area/features/navigation/presentation/providers/health_stream_provider.dart'; // Importa el provider
 import 'package:go_router/go_router.dart';
 
-class CustomAppBar extends ConsumerStatefulWidget
-    implements PreferredSizeWidget {
+class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
   const CustomAppBar({super.key});
 
   @override
-  ConsumerState<CustomAppBar> createState() => _CustomAppBarState();
-
-  @override
-  Size get preferredSize => const Size.fromHeight(105);
-}
-
-class _CustomAppBarState extends ConsumerState<CustomAppBar> {
-  final HealthStreamDatasourceImpl _datasource = HealthStreamDatasourceImpl(
-    baseUrl: 'ws://guardianarea.azurewebsites.net',
-  );
-
-  HealthMeasure _healthData = HealthMeasure(bpm: 0, spo2: 0);
-  late Stream<HealthMeasure> _healthStream;
-
-  @override
-  void initState() {
-    super.initState();
-    _healthStream =
-        _datasource.connectToHealthStream('UJ5AOv3WKh-JW_PFaz_QQ3KkxJ1La5cz');
-    _healthStream.listen((data) {
-      setState(() {
-        _healthData = data;
-      });
-    });
-  }
-
-  @override
-  void dispose() {
-    _datasource.disconnect();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Acceder al estado del authProvider
     final authState = ref.watch(authProvider);
     final userName = authState.userProfile?.firstName ?? 'Usuario';
+
+    // Observar los datos del WebSocket
+    final healthState = ref.watch(healthStreamProvider);
 
     return Container(
       color: Colors.white,
@@ -65,7 +33,9 @@ class _CustomAppBarState extends ConsumerState<CustomAppBar> {
                   width: 36,
                   height: 36,
                   colorFilter: const ColorFilter.mode(
-                      Color(0xFF08273A), BlendMode.srcIn),
+                    Color(0xFF08273A),
+                    BlendMode.srcIn,
+                  ),
                 ),
                 const Spacer(),
                 Row(
@@ -79,7 +49,9 @@ class _CustomAppBarState extends ConsumerState<CustomAppBar> {
                         width: 24,
                         height: 24,
                         colorFilter: const ColorFilter.mode(
-                            Color(0xFF08273A), BlendMode.srcIn),
+                          Color(0xFF08273A),
+                          BlendMode.srcIn,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 5),
@@ -161,13 +133,26 @@ class _CustomAppBarState extends ConsumerState<CustomAppBar> {
           ),
           Container(
             color: const Color(0xFF08273A),
-            child: HealthStatsBar(
-              bpm: _healthData.bpm.toString(),
-              spo2: _healthData.spo2.toString(),
+            child: healthState.when(
+              data: (data) => HealthStatsBar(
+                bpm: data.bpm.toString(),
+                spo2: data.spo2.toString(),
+              ),
+              loading: () => const HealthStatsBar(
+                bpm: '...',
+                spo2: '...',
+              ),
+              error: (error, stackTrace) => const HealthStatsBar(
+                bpm: 'Err',
+                spo2: 'Err',
+              ),
             ),
           ),
         ],
       ),
     );
   }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(105);
 }
