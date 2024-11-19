@@ -9,7 +9,7 @@ class ActivityRepositoryImpl extends ActivityRepository {
 
   @override
   Future<List<Activity>> fetchActivities(
-      String selectedDeviceRecordId, String activityType) {
-    return datasource.fetchActivities(selectedDeviceRecordId, activityType);
+      String selectedDeviceRecordId) {
+    return datasource.fetchActivities(selectedDeviceRecordId);
   }
 }
