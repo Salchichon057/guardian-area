@@ -51,6 +51,8 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
 
   void _connectToWebSocket(String apiKey) {
     try {
+      datasource.disconnect();
+
       _healthStream = datasource.connectToHealthStream(apiKey);
       _healthStream!.listen(
         (data) {
