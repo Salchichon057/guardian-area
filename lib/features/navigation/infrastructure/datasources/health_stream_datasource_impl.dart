@@ -1,30 +1,37 @@
 import 'dart:convert';
-import 'package:guardian_area/features/navigation/domain/datasources/health_stream_datasource.dart';
 import 'package:guardian_area/features/navigation/domain/entities/health_measure.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
-class HealthStreamDatasourceImpl implements HealthStreamDatasource {
+class HealthStreamDatasourceImpl {
   final String baseUrl;
+  WebSocketChannel? _channel;
 
   HealthStreamDatasourceImpl({required this.baseUrl});
 
-  @override
   Stream<HealthMeasure> connectToHealthStream(String roomId) {
-    final WebSocketChannel channel = WebSocketChannel.connect(
-      Uri.parse('$baseUrl/health-measures-stream?room=$roomId'),
-    );
+    final uri = Uri.parse('$baseUrl/health-measures-stream?room=$roomId');
+    _channel = WebSocketChannel.connect(uri);
 
-    // Log de conexión
-    print('Connected to WebSocket room: $roomId');
-    print('WebSocket URL: ${channel}');
+    print('Intentando conectar al WebSocket: $uri');
 
-    return channel.stream.map((event) {
-      final jsonData = jsonDecode(event as String) as Map<String, dynamic>;
-      return HealthMeasure.fromJson(
-          jsonData); // Convierte el mapa a HealthMeasure
+    return _channel!.stream.map((event) {
+      try {
+        print('Evento recibido: $event');
+        final jsonData = jsonDecode(event as String) as Map<String, dynamic>;
+        return HealthMeasure.fromJson(jsonData);
+      } catch (e) {
+        print('Error procesando evento: $e');
+        return HealthMeasure(bpm: 0, spo2: 0);
+      }
     }).handleError((error) {
-      print('WebSocket error: $error');
+      print('Error en WebSocket: $error');
       return HealthMeasure(bpm: 0, spo2: 0);
-    }).asBroadcastStream();
+    });
+  }
+
+  // Cerrar la conexión
+  void disconnect() {
+    _channel?.sink.close();
+    print('WebSocket desconectado');
   }
 }

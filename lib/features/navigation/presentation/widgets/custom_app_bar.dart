@@ -2,14 +2,51 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
-import 'package:guardian_area/features/navigation/presentation/widgets/health_stats_bar.dart'; // Importa el widget
+import 'package:guardian_area/features/navigation/infrastructure/datasources/health_stream_datasource_impl.dart';
+import 'package:guardian_area/features/navigation/domain/entities/health_measure.dart';
+import 'package:guardian_area/features/navigation/presentation/widgets/health_stats_bar.dart';
 import 'package:go_router/go_router.dart';
 
-class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
+class CustomAppBar extends ConsumerStatefulWidget
+    implements PreferredSizeWidget {
   const CustomAppBar({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CustomAppBar> createState() => _CustomAppBarState();
+
+  @override
+  Size get preferredSize => const Size.fromHeight(105);
+}
+
+class _CustomAppBarState extends ConsumerState<CustomAppBar> {
+  final HealthStreamDatasourceImpl _datasource = HealthStreamDatasourceImpl(
+    baseUrl: 'ws://guardianarea.azurewebsites.net',
+  );
+
+  HealthMeasure _healthData = HealthMeasure(bpm: 0, spo2: 0);
+  late Stream<HealthMeasure> _healthStream;
+
+  @override
+  void initState() {
+    super.initState();
+    _healthStream =
+        _datasource.connectToHealthStream('UJ5AOv3WKh-JW_PFaz_QQ3KkxJ1La5cz');
+    _healthStream.listen((data) {
+      setState(() {
+        _healthData = data;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _datasource.disconnect();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // Acceder al estado del authProvider
     final authState = ref.watch(authProvider);
     final userName = authState.userProfile?.firstName ?? 'Usuario';
 
@@ -68,9 +105,7 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
                         if (value == 'settings') {
                           context.go('/settings');
                         } else if (value == 'profile') {
-                          if (authState.userProfile != null) {
-                            context.go('/profile');
-                          }
+                          context.go('/profile');
                         } else if (value == 'logout') {
                           ref.read(authProvider.notifier).logout();
                         }
@@ -126,16 +161,13 @@ class CustomAppBar extends ConsumerWidget implements PreferredSizeWidget {
           ),
           Container(
             color: const Color(0xFF08273A),
-            child: const HealthStatsBar(
-              bpm: '110',
-              spo2: '99',
+            child: HealthStatsBar(
+              bpm: _healthData.bpm.toString(),
+              spo2: _healthData.spo2.toString(),
             ),
           ),
         ],
       ),
     );
   }
-
-  @override
-  Size get preferredSize => const Size.fromHeight(105);
 }
