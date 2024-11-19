@@ -3,6 +3,7 @@ import 'package:guardian_area/features/activities/domain/entities/activity.dart'
 import 'package:guardian_area/features/activities/infrastructure/infrastructure.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
 
+// Provider para cargar actividades basadas en el tipo seleccionado
 final activityProvider =
     FutureProvider.family<List<Activity>, String>((ref, activityType) async {
   final repository = ref.watch(activityRepositoryProvider);
@@ -17,6 +18,12 @@ final activityProvider =
   return repository.fetchActivities(deviceRecordId, activityType);
 });
 
+// Provider para listar los tipos de actividad dinámicamente
+final activityTypeProvider = FutureProvider<List<String>>((ref) async {
+  return ['GPS', 'BPM', 'SPO2'];
+});
+
+// Repository y Datasource para cargar datos
 final activityRepositoryProvider = Provider<ActivityRepositoryImpl>((ref) {
   final datasource = ref.watch(activityDatasourceProvider);
   return ActivityRepositoryImpl(datasource: datasource);
