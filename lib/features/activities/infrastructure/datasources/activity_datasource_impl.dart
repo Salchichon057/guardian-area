@@ -15,15 +15,14 @@ class ActivityDatasourceImpl extends ActivityDatasource {
   ActivityDatasourceImpl({required this.storageService});
 
   @override
-  Future<List<Activity>> fetchActivities(
-      String selectedDeviceRecordId, String activityType) async {
+  Future<List<Activity>> fetchActivities(String selectedDeviceRecordId) async {
     try {
       final token = await storageService.getValue<String>('token');
       if (token == null) throw Exception('Token not found');
 
       final response = await dio.get(
         '/devices/$selectedDeviceRecordId/activities',
-        queryParameters: {'activityType': activityType},
+        queryParameters: {'activityType': ''},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
