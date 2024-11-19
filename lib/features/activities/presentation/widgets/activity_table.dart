@@ -23,17 +23,37 @@ class _ActivityTableState extends State<ActivityTable> {
   @override
   Widget build(BuildContext context) {
     return PaginatedDataTable(
-      header: const Text(
-        'Activity History',
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ),
       columns: const [
-        DataColumn(label: Text('Event')),
-        DataColumn(label: Text('Date and Time')),
-        DataColumn(label: Text('Type')),
+        DataColumn(
+          label: Text(
+            'Event',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF08273A),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Date and Time',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF08273A),
+            ),
+          ),
+        ),
+        DataColumn(
+          label: Text(
+            'Type',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Color(0xFF08273A),
+            ),
+          ),
+        ),
       ],
       source: _dataSource,
-      rowsPerPage: 5, // Número de filas por página
+      rowsPerPage: 5, // !Número de filas por página
       columnSpacing: 20.0,
       horizontalMargin: 20.0,
       showCheckboxColumn: false,
@@ -54,11 +74,13 @@ class ActivityDataSource extends DataTableSource {
     final formattedDate =
         DateFormat('yyyy-MM-dd HH:mm:ss').format(activity.dateAndTime);
 
-    return DataRow(cells: [
-      DataCell(Text(activity.activityName)),
-      DataCell(Text(formattedDate)),
-      DataCell(Text(activity.activityType)),
-    ]);
+    return DataRow(
+      cells: [
+        DataCell(Text(activity.activityName)),
+        DataCell(Text(formattedDate)),
+        DataCell(Text(activity.activityType)),
+      ],
+    );
   }
 
   @override
