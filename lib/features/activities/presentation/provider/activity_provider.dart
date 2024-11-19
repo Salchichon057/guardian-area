@@ -15,12 +15,12 @@ final activityProvider =
     throw Exception('No device selected');
   }
 
-  return repository.fetchActivities(deviceRecordId, activityType);
+  return repository.fetchActivities(deviceRecordId);
 });
 
 // Provider para listar los tipos de actividad dinámicamente
 final activityTypeProvider = FutureProvider<List<String>>((ref) async {
-  return ['GPS', 'BPM', 'SPO2'];
+  return ['ALL', 'GPS', 'BPM', 'SPO2'];
 });
 
 // Repository y Datasource para cargar datos
