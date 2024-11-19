@@ -2,26 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:guardian_area/features/activities/domain/entities/activity.dart';
 
-class ActivityTable extends StatefulWidget {
+class ActivityTable extends StatelessWidget {
   final List<Activity> activities;
 
   const ActivityTable({super.key, required this.activities});
 
   @override
-  State<ActivityTable> createState() => _ActivityTableState();
-}
-
-class _ActivityTableState extends State<ActivityTable> {
-  late final ActivityDataSource _dataSource;
-
-  @override
-  void initState() {
-    super.initState();
-    _dataSource = ActivityDataSource(widget.activities);
-  }
-
-  @override
   Widget build(BuildContext context) {
+    const rowsPerPage = 5;
+
     return PaginatedDataTable(
       columns: const [
         DataColumn(
@@ -52,8 +41,8 @@ class _ActivityTableState extends State<ActivityTable> {
           ),
         ),
       ],
-      source: _dataSource,
-      rowsPerPage: 5, // !Número de filas por página
+      source: ActivityDataSource(activities),
+      rowsPerPage: rowsPerPage,
       columnSpacing: 20.0,
       horizontalMargin: 20.0,
       showCheckboxColumn: false,
