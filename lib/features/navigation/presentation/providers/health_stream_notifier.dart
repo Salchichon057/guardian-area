@@ -10,7 +10,9 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
 
   String? _currentApiKey;
   Stream<HealthMeasure>? _healthStream;
+  StreamSubscription<HealthMeasure>? _healthStreamSubscription;
   StreamSubscription<String?>? _apiKeySubscription;
+  Timer? _noDataTimer;
 
   HealthStreamNotifier({
     required this.datasource,
@@ -52,24 +54,42 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
   void _connectToWebSocket(String apiKey) {
     try {
       datasource.disconnect();
+      _noDataTimer?.cancel();
+      _healthStreamSubscription?.cancel();
 
       _healthStream = datasource.connectToHealthStream(apiKey);
-      _healthStream!.listen(
+      _healthStreamSubscription = _healthStream!.listen(
         (data) {
+          _noDataTimer?.cancel();
+
           state = AsyncValue.data(data);
+
+          _startNoDataTimer();
         },
         onError: (error) {
           state = AsyncValue.error(error, StackTrace.current);
         },
       );
+
+      _startNoDataTimer();
     } catch (error, stackTrace) {
       state = AsyncValue.error(error, stackTrace);
     }
   }
 
+  void _startNoDataTimer() {
+    _noDataTimer?.cancel();
+
+    _noDataTimer = Timer(const Duration(seconds: 5), () {
+      state = AsyncValue.data(HealthMeasure(bpm: 0, spo2: 0));
+    });
+  }
+
   @override
   void dispose() {
     _apiKeySubscription?.cancel();
+    _healthStreamSubscription?.cancel();
+    _noDataTimer?.cancel();
     datasource.disconnect();
     super.dispose();
   }
