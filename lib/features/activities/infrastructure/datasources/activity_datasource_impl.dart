@@ -22,7 +22,6 @@ class ActivityDatasourceImpl extends ActivityDatasource {
 
       final response = await dio.get(
         '/devices/$selectedDeviceRecordId/activities',
-        queryParameters: {'activityType': ''},
         options: Options(headers: {'Authorization': 'Bearer $token'}),
       );
 
