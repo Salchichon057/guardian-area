@@ -57,30 +57,30 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
       _cancelTimers();
       _isReconnecting = false; // *Resetea la bandera de reconexión
 
-      // print('Intentando conectar con WebSocket usando API Key: $apiKey');
+      print('Intentando conectar con WebSocket usando API Key: $apiKey');
       final healthStream = datasource.connectToHealthStream(apiKey);
 
       _healthStreamSubscription?.cancel();
       _healthStreamSubscription = healthStream.listen(
         (data) {
-          // print('Datos recibidos: $data');
+          print('Datos recibidos: $data');
           _resetNoDataTimer(); // *Reinicia el temporizador de "no datos"
           state = AsyncValue.data(data);
         },
         onError: (error) {
-          // print('Error en WebSocket: $error');
+          print('Error en WebSocket: $error');
           state = AsyncValue.error(error, StackTrace.current);
           _scheduleReconnectWithBackoff(apiKey);
         },
         onDone: () {
-          // print('WebSocket cerrado, intentando reconectar...');
+          print('WebSocket cerrado, intentando reconectar...');
           _scheduleReconnectWithBackoff(apiKey);
         },
       );
 
       _resetNoDataTimer();
     } catch (error, stackTrace) {
-      // print('Error al conectar WebSocket: $error');
+      print('Error al conectar WebSocket: $error');
       state = AsyncValue.error(error, stackTrace);
       _scheduleReconnectWithBackoff(apiKey);
     }
@@ -94,7 +94,7 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
     final connectivityResult = await Connectivity().checkConnectivity();
     // ignore: unrelated_type_equality_checks
     if (connectivityResult == ConnectivityResult.none) {
-      // print('Sin conexión a Internet. Esperando...');
+      print('Sin conexión a Internet. Esperando...');
       _reconnectTimer = Timer(const Duration(seconds: 5), () {
         _isReconnecting = false; // Permitir nuevos intentos de reconexión
         _scheduleReconnectWithBackoff(apiKey, attempt: attempt);
@@ -104,11 +104,11 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
 
     // Calcula el tiempo de espera con Exponential Backoff (1s, 2s, 4s, ...)
     final delay = Duration(seconds: (1 << attempt).clamp(1, 64));
-    // print('Reconectando en ${delay.inSeconds} segundos (intento: $attempt)');
+    print('Reconectando en ${delay.inSeconds} segundos (intento: $attempt)');
 
     // *Programa el temporizador para reconectar
     _reconnectTimer = Timer(delay, () {
-      // print('Intentando conectar con WebSocket usando API Key: $apiKey');
+      print('Intentando conectar con WebSocket usando API Key: $apiKey');
       _connectToWebSocket(apiKey);
 
       // *Si la conexión falla, intentamos de nuevo
@@ -120,7 +120,7 @@ class HealthStreamNotifier extends StateNotifier<AsyncValue<HealthMeasure>> {
   void _resetNoDataTimer() {
     _noDataTimer?.cancel();
     _noDataTimer = Timer(const Duration(minutes: 5), () {
-      // print('No se han recibido datos en 5 minutos. Intentando reconectar...');
+      print('No se han recibido datos en 5 minutos. Intentando reconectar...');
       if (_currentApiKey != null) {
         _connectToWebSocket(_currentApiKey!);
       }
