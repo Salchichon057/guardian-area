@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:guardian_area/features/vital-signs/domain/entities/health.dart';
 import 'package:guardian_area/features/vital-signs/presentation/providers/health_provider.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -69,7 +70,30 @@ class VitalSignsScreen extends ConsumerWidget {
             ],
           ),
           loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Error: $error')),
+          error: (error, _) => Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SvgPicture.asset(
+                  'assets/images/chart-simple-solid.svg',
+                  width: 50,
+                  height: 50,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.grey,
+                    BlendMode.srcIn,
+                  ),
+                ),
+                const Text(
+                  'If you don\'t see the map, please check if you have selected a device.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                      fontSize: 16,
+                      color: Color(0xFF08273A),
+                      fontWeight: FontWeight.w400),
+                )
+              ],
+            ),
+          ),
         ),
       ),
     );
