@@ -1,9 +1,6 @@
-// ignore_for_file: unused_result
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:guardian_area/features/activities/domain/entities/activity.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:guardian_area/features/activities/presentation/provider/activity_provider.dart';
 import 'package:guardian_area/features/activities/presentation/widgets/activity_table.dart';
 
@@ -15,18 +12,16 @@ class ActivityScreen extends ConsumerStatefulWidget {
 }
 
 class _ActivityScreenState extends ConsumerState<ActivityScreen> {
-  String selectedActivityType = 'ALL'; // Default: ALL
+  String selectedActivityType = 'ALL';
 
   @override
   Widget build(BuildContext context) {
     final allActivitiesState = ref.watch(allActivitiesProvider);
     final activityTypeState = ref.watch(activityTypeProvider);
 
-    List<Activity> filteredActivities = [];
-    if (allActivitiesState is AsyncData) {
-      filteredActivities =
-          ref.watch(filteredActivitiesProvider(selectedActivityType));
-    }
+    // Estado filtrado calculado solo cuando hay datos
+    final filteredActivities =
+        ref.watch(filteredActivitiesProvider(selectedActivityType));
 
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +36,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
           RefreshIndicator(
             color: const Color(0xFF08273A),
             onRefresh: () async {
-              ref.refresh(allActivitiesProvider);
+              ref.invalidate(allActivitiesProvider); // Invalida y recarga
             },
             child: ListView(
               physics: const AlwaysScrollableScrollPhysics(),
@@ -95,10 +90,10 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                         ),
                       );
                     },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
+                    loading: () => const Center(
+                        child: CircularProgressIndicator()), // Cargando tipos
                     error: (error, stackTrace) =>
-                        const Text('Failed to load activity types'),
+                        const Text('Failed to load activity types'), // Error
                   ),
                 ),
 
@@ -113,8 +108,8 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                           )
                         : ActivityTable(activities: filteredActivities);
                   },
-                  loading: () =>
-                      const Center(child: CircularProgressIndicator()),
+                  loading: () => const Center(
+                      child: CircularProgressIndicator()), // Cargando datos
                   error: (error, stackTrace) => Center(
                     child: Padding(
                       padding: const EdgeInsets.all(16.0),
@@ -130,8 +125,7 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                               BlendMode.srcIn,
                             ),
                           ),
-                          const SizedBox(
-                              height: 16), // Espaciado entre ícono y texto
+                          const SizedBox(height: 16), // Espaciado
                           const Text(
                             'If you don\'t see the activities, please check if you have selected a device.',
                             textAlign: TextAlign.center,

@@ -3,8 +3,9 @@ import 'package:guardian_area/features/activities/domain/entities/activity.dart'
 import 'package:guardian_area/features/activities/infrastructure/infrastructure.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
 
-// !Provider para cargar todas las actividades
-final allActivitiesProvider = FutureProvider<List<Activity>>((ref) async {
+// Provider para cargar todas las actividades
+final allActivitiesProvider =
+    FutureProvider.autoDispose<List<Activity>>((ref) async {
   final repository = ref.watch(activityRepositoryProvider);
   final storageService = ref.watch(keyValueStorageServiceProvider);
 
@@ -22,24 +23,31 @@ final allActivitiesProvider = FutureProvider<List<Activity>>((ref) async {
   }
 });
 
+// Provider para actividades filtradas
 final filteredActivitiesProvider =
-    Provider.family<List<Activity>, String>((ref, activityType) {
-  final allActivities = ref.watch(allActivitiesProvider).value ?? [];
+    Provider.autoDispose.family<List<Activity>, String>((ref, activityType) {
+  final allActivitiesState = ref.watch(allActivitiesProvider);
 
-  if (activityType == 'ALL') {
-    return allActivities;
-  }
+  return allActivitiesState.maybeWhen(
+    data: (allActivities) {
+      if (activityType == 'ALL') {
+        return allActivities;
+      }
 
-  return allActivities
-      .where((activity) => activity.activityType == activityType)
-      .toList();
+      return allActivities
+          .where((activity) => activity.activityType == activityType)
+          .toList();
+    },
+    orElse: () => [], // Lista vacía si no hay datos
+  );
 });
 
-final activityTypeProvider = FutureProvider<List<String>>((ref) async {
+final activityTypeProvider =
+    FutureProvider.autoDispose<List<String>>((ref) async {
   return ['ALL', 'GPS', 'BPM', 'SPO2'];
 });
 
-// !Repository y Datasource para cargar datos
+// Repository y Datasource para cargar datos
 final activityRepositoryProvider = Provider<ActivityRepositoryImpl>((ref) {
   final datasource = ref.watch(activityDatasourceProvider);
   return ActivityRepositoryImpl(datasource: datasource);
