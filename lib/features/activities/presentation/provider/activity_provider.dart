@@ -7,14 +7,19 @@ import 'package:guardian_area/shared/infrastructure/services/key_value_storage_p
 final allActivitiesProvider = FutureProvider<List<Activity>>((ref) async {
   final repository = ref.watch(activityRepositoryProvider);
   final storageService = ref.watch(keyValueStorageServiceProvider);
-  final deviceRecordId =
-      await storageService.getValue<String>('selectedDeviceRecordId');
 
-  if (deviceRecordId == null) {
-    throw Exception('No device selected');
+  try {
+    final deviceRecordId =
+        await storageService.getValue<String>('selectedDeviceRecordId');
+
+    if (deviceRecordId == null) {
+      throw Exception('No device selected');
+    }
+
+    return await repository.fetchActivities(deviceRecordId);
+  } catch (e) {
+    throw Exception('Failed to load activities: ${e.toString()}');
   }
-
-  return repository.fetchActivities(deviceRecordId);
 });
 
 final filteredActivitiesProvider =

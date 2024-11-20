@@ -2,6 +2,8 @@
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:guardian_area/features/activities/domain/entities/activity.dart';
 import 'package:guardian_area/features/activities/presentation/provider/activity_provider.dart';
 import 'package:guardian_area/features/activities/presentation/widgets/activity_table.dart';
 
@@ -17,23 +19,23 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // ?Obtenemos el estado de carga del provider principal
     final allActivitiesState = ref.watch(allActivitiesProvider);
-
-    // ?Obtenemos la lista de tipos de actividades
     final activityTypeState = ref.watch(activityTypeProvider);
 
-    // ?Obtenemos las actividades filtradas localmente
-    final filteredActivities =
-        ref.watch(filteredActivitiesProvider(selectedActivityType));
+    List<Activity> filteredActivities = [];
+    if (allActivitiesState is AsyncData) {
+      filteredActivities =
+          ref.watch(filteredActivitiesProvider(selectedActivityType));
+    }
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text(
-            'Activity History',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-          ),
-          backgroundColor: Colors.white),
+        title: const Text(
+          'Activity History',
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        backgroundColor: Colors.white,
+      ),
       body: Stack(
         children: [
           RefreshIndicator(
@@ -100,12 +102,50 @@ class _ActivityScreenState extends ConsumerState<ActivityScreen> {
                   ),
                 ),
 
-                filteredActivities.isEmpty
-                    ? const Center(
-                        child: Padding(
-                            padding: EdgeInsets.all(20),
-                            child: Text('No activities found')))
-                    : ActivityTable(activities: filteredActivities),
+                allActivitiesState.when(
+                  data: (_) {
+                    return filteredActivities.isEmpty
+                        ? const Center(
+                            child: Padding(
+                              padding: EdgeInsets.all(20),
+                              child: Text('No activities found'),
+                            ),
+                          )
+                        : ActivityTable(activities: filteredActivities);
+                  },
+                  loading: () =>
+                      const Center(child: CircularProgressIndicator()),
+                  error: (error, stackTrace) => Center(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          SvgPicture.asset(
+                            'assets/images/bell-slash-solid.svg',
+                            width: 50,
+                            height: 50,
+                            colorFilter: const ColorFilter.mode(
+                              Colors.grey,
+                              BlendMode.srcIn,
+                            ),
+                          ),
+                          const SizedBox(
+                              height: 16), // Espaciado entre ícono y texto
+                          const Text(
+                            'If you don\'t see the activities, please check if you have selected a device.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF08273A),
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               ],
             ),
           ),
