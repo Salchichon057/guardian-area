@@ -7,6 +7,7 @@ import 'package:guardian_area/features/geofences/domain/entities/geofence.dart';
 import 'package:guardian_area/features/geofences/presentation/providers/providers.dart';
 import 'package:guardian_area/features/geofences/presentation/widgets/geofences_map_widget.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
+import 'package:guardian_area/shared/widgets/polygon_utils.dart';
 import 'package:latlong2/latlong.dart';
 
 class GeofenceDetailsScreen extends ConsumerStatefulWidget {
@@ -57,7 +58,11 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
 
   Future<void> _saveChanges() async {
     final mapNotifier = ref.read(mapProvider);
-    final coordinates = mapNotifier.geofencePoints
+
+    final sortedCoordinates =
+        PolygonUtils.convexHull(mapNotifier.geofencePoints);
+
+    final coordinates = sortedCoordinates
         .map((point) =>
             Coordinate(latitude: point.latitude, longitude: point.longitude))
         .toList();
@@ -75,6 +80,7 @@ class GeofenceDetailsScreenState extends ConsumerState<GeofenceDetailsScreen> {
       return;
     }
 
+    // Construimos la geocerca con las coordenadas ordenadas
     final geofence = widget.isEditMode
         ? widget.geofence!.copyWith(
             name: _nameController.text,
