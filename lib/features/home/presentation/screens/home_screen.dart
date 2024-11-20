@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:guardian_area/features/home/presentation/providers/current_location_provider.dart';
 import 'package:guardian_area/features/geofences/presentation/providers/geofence_provider.dart';
@@ -96,8 +97,15 @@ class HomeScreen extends ConsumerWidget {
                 },
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (error, stackTrace) => Center(
-                  child: Text('Failed to load location: $error'),
-                ),
+                    child: SvgPicture.asset(
+                  'assets/images/map-location-dot-solid.svg',
+                  width: 70,
+                  height: 70,
+                  colorFilter: const ColorFilter.mode(
+                    Colors.grey,
+                    BlendMode.srcIn,
+                  ),
+                )),
               ),
 
               // Información en tiempo real
@@ -138,7 +146,17 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         loading: () =>
                             const Text('Loading current location...'),
-                        error: (error, stackTrace) => Text('Error: $error'),
+                        error: (error, stackTrace) {
+                          return const Text(
+                            'If you don\'t see the map, please check if you have selected a device.',
+                            textAlign: TextAlign.center,
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF08273A),
+                              fontWeight: FontWeight.w500
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ),
