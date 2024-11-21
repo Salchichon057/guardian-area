@@ -73,16 +73,16 @@ class ChatNotifier extends StateNotifier<ChatState> {
         },
         onError: (error) {
           state = state.copyWith(isConnected: false);
-          print('WebSocket error: $error');
+          // print('WebSocket error: $error');
         },
         onDone: () {
           state = state.copyWith(isConnected: false);
-          print('WebSocket connection closed.');
+          // print('WebSocket connection closed.');
         },
       );
     } catch (error) {
       state = state.copyWith(isConnected: false);
-      print('Error connecting to WebSocket: $error');
+      // print('Error connecting to WebSocket: $error');
     }
   }
 
@@ -98,9 +98,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
     if (text.startsWith('/')) {
       _handleCommand(text);
     } else {
-      // Usa el método del datasource para enviar el mensaje
-      print('Sending message to server: $text');
-      _datasource.sendMessage(text);
+      _addMessage(Message(
+        text: 'Please use an available command. Use /help to get a list of commands.',
+        fromWho: FromWho.device,
+      ));
     }
   }
 
@@ -112,7 +113,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         fromWho: FromWho.device,
       ));
     } else if (command == '/alarm') {
-      print('Sending /alarm command to server');
+      // print('Sending /alarm command to server');
       _datasource.sendMessage(command);
       _addMessage(Message(
         text: 'Alarm command sent to the server.',
