@@ -146,6 +146,23 @@ class ChatNotifier extends StateNotifier<ChatState> {
       state = state.copyWith(isConnected: false);
     }
   }
+
+  void reset() {
+    state = ChatState(
+      messages: [
+        Message(
+          text: 'Hello, how can I help you?',
+          fromWho: FromWho.device,
+        ),
+        Message(
+          text: 'Use /help to get a list of commands',
+          fromWho: FromWho.device,
+        ),
+      ],
+      isConnected: false,
+      scrollController: ScrollController(),
+    );
+  }
 }
 
 final chatProvider = StateNotifierProvider<ChatNotifier, ChatState>((ref) {

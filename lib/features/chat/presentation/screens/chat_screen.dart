@@ -24,8 +24,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
 
   @override
   void dispose() {
-    // Llama a disconnect sin modificar el estado del árbol
-    chatNotifier.disconnect();
+    Future.microtask(() {
+      chatNotifier.reset();
+      chatNotifier.disconnect();
+    });
+
     super.dispose();
   }
 
