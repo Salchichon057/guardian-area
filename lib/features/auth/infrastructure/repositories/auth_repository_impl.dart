@@ -1,4 +1,5 @@
 import 'package:guardian_area/features/auth/domain/domain.dart';
+import 'package:guardian_area/features/auth/domain/entities/register_request.dart';
 
 class AuthRepositoryImpl extends AuthRepository {
   final AuthDatasource datasource;
@@ -16,8 +17,8 @@ class AuthRepositoryImpl extends AuthRepository {
   }
 
   @override
-  Future<AuthenticatedUser> register(String username, String password, List<String> roles) {
-    return datasource.register(username, password, roles);
+  Future<AuthenticatedUser> register(RegisterRequest request) {
+    return datasource.register(request);
   }
 
   @override

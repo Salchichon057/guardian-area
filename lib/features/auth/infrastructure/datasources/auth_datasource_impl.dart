@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:guardian_area/config/consts/environments.dart';
 import 'package:guardian_area/features/auth/domain/domain.dart';
+import 'package:guardian_area/features/auth/domain/entities/register_request.dart';
 import 'package:guardian_area/features/auth/infrastructure/infrastructure.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';
 
@@ -49,20 +50,16 @@ class AuthDatasourceImpl extends AuthDatasource {
   }
 
   @override
-  Future<AuthenticatedUser> register(
-      String username, String password, List<String> roles) async {
+  Future<AuthenticatedUser> register(RegisterRequest request) async {
     try {
       final response = await dio.post(
         '/authentication/sign-up',
-        data: {
-          'username': username,
-          'password': password,
-          'roles': roles,
-        },
+        data: request.toJson(),
       );
+
       return UserMapper.userJsonToEntity(response.data);
-    } catch (e) {
-      throw Exception('Registration failed');
+    } on DioException catch (e) {
+      throw Exception('Registration failed: ${e.message}');
     }
   }
 
