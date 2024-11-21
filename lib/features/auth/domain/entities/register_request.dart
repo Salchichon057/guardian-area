@@ -4,7 +4,6 @@ class RegisterRequest {
   final String password;
   final String firstName;
   final String lastName;
-  final String address;
   final List<String> roles;
 
   RegisterRequest({
@@ -13,7 +12,6 @@ class RegisterRequest {
     required this.password,
     required this.firstName,
     required this.lastName,
-    required this.address,
     this.roles = const ['ROLE_ADMIN'],
   });
 
@@ -24,7 +22,6 @@ class RegisterRequest {
       'password': password,
       'firstName': firstName,
       'lastName': lastName,
-      'address': address,
       'roles': roles,
     };
   }
