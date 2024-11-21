@@ -14,11 +14,9 @@ class RegisterFormState {
   final bool termsAccepted;
   final Email email;
   final Password password;
-  final Password confirmPassword;
   final Username username;
   final String firstName;
   final String lastName;
-  final String address;
 
   RegisterFormState({
     this.isPosting = false,
@@ -27,11 +25,9 @@ class RegisterFormState {
     this.termsAccepted = false,
     this.email = const Email.pure(),
     this.password = const Password.pure(),
-    this.confirmPassword = const Password.pure(),
     this.username = const Username.pure(),
     this.firstName = '',
     this.lastName = '',
-    this.address = '',
   });
 
   RegisterFormState copyWith({
@@ -41,11 +37,9 @@ class RegisterFormState {
     bool? termsAccepted,
     Email? email,
     Password? password,
-    Password? confirmPassword,
     Username? username,
     String? firstName,
     String? lastName,
-    String? address,
   }) {
     return RegisterFormState(
       isPosting: isPosting ?? this.isPosting,
@@ -54,11 +48,9 @@ class RegisterFormState {
       termsAccepted: termsAccepted ?? this.termsAccepted,
       email: email ?? this.email,
       password: password ?? this.password,
-      confirmPassword: confirmPassword ?? this.confirmPassword,
       username: username ?? this.username,
       firstName: firstName ?? this.firstName,
       lastName: lastName ?? this.lastName,
-      address: address ?? this.address,
     );
   }
 }
@@ -76,7 +68,6 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
       isValid: _validateForm(
             email: newEmail,
             password: state.password,
-            confirmPassword: state.confirmPassword,
             username: state.username,
           ) &&
           state.termsAccepted,
@@ -90,21 +81,6 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
       isValid: _validateForm(
             email: state.email,
             password: newPassword,
-            confirmPassword: state.confirmPassword,
-            username: state.username,
-          ) &&
-          state.termsAccepted,
-    );
-  }
-
-  void onConfirmPasswordChanged(String value) {
-    final newConfirmPassword = Password.dirty(value);
-    state = state.copyWith(
-      confirmPassword: newConfirmPassword,
-      isValid: _validateForm(
-            email: state.email,
-            password: state.password,
-            confirmPassword: newConfirmPassword,
             username: state.username,
           ) &&
           state.termsAccepted,
@@ -118,7 +94,6 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
       isValid: _validateForm(
             email: state.email,
             password: state.password,
-            confirmPassword: state.confirmPassword,
             username: newUsername,
           ) &&
           state.termsAccepted,
@@ -133,17 +108,12 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
     state = state.copyWith(lastName: value);
   }
 
-  void onAddressChanged(String value) {
-    state = state.copyWith(address: value);
-  }
-
   void onTermsAcceptedChanged(bool isAccepted) {
     state = state.copyWith(
       termsAccepted: isAccepted,
       isValid: _validateForm(
             email: state.email,
             password: state.password,
-            confirmPassword: state.confirmPassword,
             username: state.username,
           ) &&
           isAccepted,
@@ -153,31 +123,41 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
   Future<void> onFormSubmit(BuildContext context) async {
     _touchAllFields();
 
-    if (!state.isValid || state.password.value != state.confirmPassword.value) {
+    if (!state.isValid || state.password.value.isEmpty) {
       state = state.copyWith(
         isFormPosted: true,
         isValid: false,
       );
+      print("Form is invalid.");
       return;
     }
 
     state = state.copyWith(isPosting: true);
 
     try {
+      print("Submitting form:");
+      print("Email: ${state.email.value}");
+      print("Username: ${state.username.value}");
+      print("Password: ${state.password.value}");
+      print("First Name: ${state.firstName}");
+      print("Last Name: ${state.lastName}");
+      print("Terms Accepted: ${state.termsAccepted}");
+
       await authNotifier.registerUser(
+        email: state.email.value,
         username: state.username.value,
         password: state.password.value,
-        email: state.email.value,
         firstName: state.firstName,
         lastName: state.lastName,
-        address: state.address,
       );
 
       if (mounted) {
         state = state.copyWith(isPosting: false);
+        print("Registration successful. Redirecting to login...");
         context.go('/login');
       }
     } catch (e) {
+      print("Error during registration: $e");
       state = state.copyWith(isPosting: false);
     }
   }
@@ -185,19 +165,16 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
   void _touchAllFields() {
     final email = Email.dirty(state.email.value);
     final password = Password.dirty(state.password.value);
-    final confirmPassword = Password.dirty(state.confirmPassword.value);
     final username = Username.dirty(state.username.value);
 
     state = state.copyWith(
       email: email,
       password: password,
-      confirmPassword: confirmPassword,
       username: username,
       isFormPosted: true,
       isValid: _validateForm(
             email: email,
             password: password,
-            confirmPassword: confirmPassword,
             username: username,
           ) &&
           state.termsAccepted,
@@ -207,11 +184,14 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
   bool _validateForm({
     required Email email,
     required Password password,
-    required Password confirmPassword,
     required Username username,
   }) {
+    final isFirstNameValid = state.firstName.isNotEmpty;
+    final isLastNameValid = state.lastName.isNotEmpty;
+
     return Formz.validate([email, password, username]) &&
-        password.value == confirmPassword.value;
+        isFirstNameValid &&
+        isLastNameValid;
   }
 }
 
