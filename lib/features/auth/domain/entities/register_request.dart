@@ -14,7 +14,7 @@ class RegisterRequest {
     required this.firstName,
     required this.lastName,
     required this.address,
-    this.roles = const ['user'],
+    this.roles = const ['ROLE_ADMIN'],
   });
 
   Map<String, dynamic> toJson() {
