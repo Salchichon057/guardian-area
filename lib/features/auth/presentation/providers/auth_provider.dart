@@ -65,7 +65,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
     required String email,
     required String firstName,
     required String lastName,
-    required String address,
     List<String> roles = const ['ROLE_ADMIN'],
   }) async {
     try {
@@ -75,7 +74,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
         password: password,
         firstName: firstName,
         lastName: lastName,
-        address: address,
         roles: roles,
       );
 
