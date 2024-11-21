@@ -56,10 +56,10 @@ class ChatNotifier extends StateNotifier<ChatState> {
           .getValue<String>('selectedApiKey');
 
       if (roomId == null || roomId.isEmpty || roomId == '123456789') {
-        Message(
-          text: 'Select an Device to connect to.',
+        _addMessage(Message(
+          text: 'Select a Device to connect to.',
           fromWho: FromWho.device,
-        );
+        ));
         throw Exception('No roomId available for WebSocket connection.');
       }
 
