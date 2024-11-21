@@ -2,7 +2,6 @@ import 'package:guardian_area/shared/infrastructure/services/key_value_storage_s
 import 'package:shared_preferences/shared_preferences.dart';
 
 class KeyValueStorageServiceImpl extends KeyValueStorageService {
-  
   Future<SharedPreferences> getSharedPrefs() async {
     return await SharedPreferences.getInstance();
   }
@@ -49,5 +48,11 @@ class KeyValueStorageServiceImpl extends KeyValueStorageService {
   Future<bool> removeKey(String key) async {
     final prefs = await getSharedPrefs();
     return await prefs.remove(key);
+  }
+
+  @override
+  Future<void> removeAllKeys() async {
+    final prefs = await getSharedPrefs();
+    await prefs.clear();
   }
 }

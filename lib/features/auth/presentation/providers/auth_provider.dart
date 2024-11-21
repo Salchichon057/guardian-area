@@ -93,6 +93,9 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   void _setLoggedUser(AuthenticatedUser user) async {
     await keyValueStorageService.setKeyValue('token', user.token);
+    await keyValueStorageService.setKeyValue(
+        'selectedDeviceRecordId', '123456789');
+    await keyValueStorageService.setKeyValue('selectedApiKey', '123456789');
     state = state.copyWith(
       user: user,
       authStatus: AuthStatus.authenticated,
@@ -101,8 +104,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   }
 
   Future<void> logout([String? errorMessage]) async {
-    await keyValueStorageService.removeKey('token');
-    // TODO: remover todos los datos que se guardan en el storage
+    await keyValueStorageService.removeAllKeys();
     state = state.copyWith(
       authStatus: AuthStatus.unauthenticated,
       user: null,
