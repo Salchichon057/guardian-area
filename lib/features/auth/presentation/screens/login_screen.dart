@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:guardian_area/features/auth/presentation/providers/auth_provider.dart';
 import 'package:guardian_area/features/auth/presentation/providers/providers.dart';
 import 'package:guardian_area/shared/widgets/widgets.dart';
@@ -93,7 +94,9 @@ class LoginScreen extends ConsumerWidget {
                             style: TextStyle(color: Colors.black54),
                           ),
                           TextButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              context.go('/register');
+                            },
                             child: const Text(
                               'Sign up here',
                               style: TextStyle(color: Colors.blue),
