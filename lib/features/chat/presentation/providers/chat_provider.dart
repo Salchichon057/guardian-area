@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/chat/domain/entities/message.dart';
 import 'package:guardian_area/features/chat/infrastructure/datasources/chat_stream_datasource_impl.dart';
+import 'package:guardian_area/features/chat/infrastructure/mappers/message_mapper.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
 
 class ChatState {
@@ -54,7 +55,11 @@ class ChatNotifier extends StateNotifier<ChatState> {
           .read(keyValueStorageServiceProvider)
           .getValue<String>('selectedApiKey');
 
-      if (roomId == null || roomId.isEmpty) {
+      if (roomId == null || roomId.isEmpty || roomId == '123456789') {
+        Message(
+          text: 'Select an Device to connect to.',
+          fromWho: FromWho.device,
+        );
         throw Exception('No roomId available for WebSocket connection.');
       }
 
@@ -62,14 +67,17 @@ class ChatNotifier extends StateNotifier<ChatState> {
       state = state.copyWith(isConnected: true);
 
       stream.listen(
-        (message) {
+        (deviceMessage) {
+          final message = MessageMapper.fromDeviceMessage(deviceMessage);
           _addMessage(message);
         },
         onError: (error) {
           state = state.copyWith(isConnected: false);
+          print('WebSocket error: $error');
         },
         onDone: () {
           state = state.copyWith(isConnected: false);
+          print('WebSocket connection closed.');
         },
       );
     } catch (error) {
@@ -90,6 +98,8 @@ class ChatNotifier extends StateNotifier<ChatState> {
     if (text.startsWith('/')) {
       _handleCommand(text);
     } else {
+      // Usa el método del datasource para enviar el mensaje
+      print('Sending message to server: $text');
       _datasource.sendMessage(text);
     }
   }
@@ -102,6 +112,7 @@ class ChatNotifier extends StateNotifier<ChatState> {
         fromWho: FromWho.device,
       ));
     } else if (command == '/alarm') {
+      print('Sending /alarm command to server');
       _datasource.sendMessage(command);
       _addMessage(Message(
         text: 'Alarm command sent to the server.',
@@ -131,7 +142,9 @@ class ChatNotifier extends StateNotifier<ChatState> {
 
   void disconnect() {
     _datasource.disconnect();
-    state = state.copyWith(isConnected: false);
+    if (state.isConnected) {
+      state = state.copyWith(isConnected: false);
+    }
   }
 }
 

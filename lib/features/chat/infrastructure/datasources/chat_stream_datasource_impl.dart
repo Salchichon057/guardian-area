@@ -1,5 +1,6 @@
 import 'package:guardian_area/features/chat/domain/datasources/chat_stream_datasource.dart';
 import 'package:guardian_area/features/chat/domain/entities/device_message.dart';
+import 'dart:convert';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ChatStreamDatasourceImpl extends ChatStreamDatasource {
@@ -17,17 +18,28 @@ class ChatStreamDatasourceImpl extends ChatStreamDatasource {
 
     return _channel!.stream.map((event) {
       try {
-        print('Raw data received: $event');
-        final message = DeviceMessage.fromJson(event);
+        final jsonData = jsonDecode(event);
+        final message = DeviceMessage.fromJson(jsonData);
+        print('Parsed WebSocket message: $message');
         return message;
       } catch (e) {
         print('Error parsing WebSocket data: $e');
-        return DeviceMessage(message: 'Error parsing message');
+        return DeviceMessage(message: 'Sorry, I tried to get the message but I failed');
       }
     }).handleError((error) {
       print('WebSocket error: $error');
-      return DeviceMessage(message: 'Error parsing message');
+      return DeviceMessage(message: 'Sorry, but I failed to connect to the Device');
     });
+  }
+
+  /// Método para enviar mensajes al WebSocket
+  void sendMessage(String text) {
+    if (_channel != null) {
+      print('Sending message: $text');
+      _channel!.sink.add(text);
+    } else {
+      print('Cannot send message, WebSocket is not connected.');
+    }
   }
 
   void disconnect() {
