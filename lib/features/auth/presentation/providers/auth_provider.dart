@@ -77,12 +77,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
         roles: roles,
       );
 
-      final authenticatedUser = await authRepository.register(request);
-      _setLoggedUser(authenticatedUser);
-
-      final userProfile =
-          await authRepository.fetchUserProfile(authenticatedUser.id);
-      state = state.copyWith(userProfile: userProfile);
+      await authRepository.register(request);
     } catch (e) {
       logout('Registration failed');
     }
