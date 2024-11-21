@@ -23,9 +23,11 @@ class ChatStreamDatasourceImpl extends ChatStreamDatasource {
           final message = DeviceMessage.fromJson(jsonData);
           // print('Parsed WebSocket message: $message');
           return message;
-        } else {
+        } else if (event == 'ALARM_ON') {
           // print('Received plain text message: $event');
-          return DeviceMessage(message: event);
+          return DeviceMessage(message: 'The alarm is active');
+        } else {
+          return DeviceMessage(message: 'Waiting alarm');
         }
       } catch (e) {
         // print('Error parsing WebSocket data: $e');

@@ -36,7 +36,6 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        // Oculta el teclado al hacer clic fuera del campo de texto
         FocusManager.instance.primaryFocus?.unfocus();
       },
       child: Scaffold(
