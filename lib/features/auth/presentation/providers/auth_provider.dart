@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:guardian_area/features/auth/domain/domain.dart';
+import 'package:guardian_area/features/auth/domain/entities/register_request.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_provider.dart';
 import 'package:guardian_area/shared/infrastructure/services/key_value_storage_service.dart';
 import '../../infrastructure/infrastructure.dart';
@@ -58,11 +59,27 @@ class AuthNotifier extends StateNotifier<AuthState> {
     }
   }
 
-  Future<void> registerUser(
-      String username, String password, List<String> roles) async {
+  Future<void> registerUser({
+    required String username,
+    required String password,
+    required String email,
+    required String firstName,
+    required String lastName,
+    required String address,
+    List<String> roles = const ['ROLE_ADMIN'],
+  }) async {
     try {
-      final authenticatedUser =
-          await authRepository.register(username, password, roles);
+      final request = RegisterRequest(
+        username: username,
+        email: email,
+        password: password,
+        firstName: firstName,
+        lastName: lastName,
+        address: address,
+        roles: roles,
+      );
+
+      final authenticatedUser = await authRepository.register(request);
       _setLoggedUser(authenticatedUser);
 
       final userProfile =
