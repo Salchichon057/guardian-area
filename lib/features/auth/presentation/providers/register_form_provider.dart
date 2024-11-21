@@ -128,21 +128,12 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
         isFormPosted: true,
         isValid: false,
       );
-      print("Form is invalid.");
       return;
     }
 
     state = state.copyWith(isPosting: true);
 
     try {
-      print("Submitting form:");
-      print("Email: ${state.email.value}");
-      print("Username: ${state.username.value}");
-      print("Password: ${state.password.value}");
-      print("First Name: ${state.firstName}");
-      print("Last Name: ${state.lastName}");
-      print("Terms Accepted: ${state.termsAccepted}");
-
       await authNotifier.registerUser(
         email: state.email.value,
         username: state.username.value,
@@ -153,11 +144,9 @@ class RegisterFormNotifier extends StateNotifier<RegisterFormState> {
 
       if (mounted) {
         state = state.copyWith(isPosting: false);
-        print("Registration successful. Redirecting to login...");
         context.go('/login');
       }
     } catch (e) {
-      print("Error during registration: $e");
       state = state.copyWith(isPosting: false);
     }
   }
