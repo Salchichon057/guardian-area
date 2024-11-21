@@ -12,33 +12,30 @@ class CurrentLocationDatasourceImpl extends CurrentLocationDatasource {
     disconnect();
 
     final uri = Uri.parse('$baseUrl/location-stream?room=$roomId');
-    print(
-        'Connecting to WebSocket at: $uri'); // Print para rastrear la conexión
+    // print('Connecting to WebSocket at: $uri');
     _channel = WebSocketChannel.connect(uri);
 
     return _channel!.stream.map((event) {
       try {
-        print('Raw data received: $event'); // Print para ver los datos crudos
+        // print('Raw data received: $event');
         // Convertir el String JSON a Map<String, dynamic>
         final jsonData = jsonDecode(event) as Map<String, dynamic>;
         final location = CurrentLocation.fromJson(jsonData);
-        print(
-            'Parsed CurrentLocation: $location'); // Print después de parsear los datos
+        // print('Parsed CurrentLocation: $location');
         return location;
       } catch (e) {
-        print(
-            'Error parsing WebSocket data: $e'); // Print para manejar errores de parsing
+        // print('Error parsing WebSocket data: $e');
         return CurrentLocation(latitude: 0, longitude: 0, riskLevel: '');
       }
     }).handleError((error) {
-      print('WebSocket error: $error'); // Print para errores generales
+      // print('WebSocket error: $error');
       return CurrentLocation(latitude: 0, longitude: 0, riskLevel: '');
     });
   }
 
   void disconnect() {
     if (_channel != null) {
-      print('Disconnecting from WebSocket'); // Print cuando se desconecta
+      // print('Disconnecting from WebSocket');
       _channel!.sink.close();
       _channel = null;
     }
