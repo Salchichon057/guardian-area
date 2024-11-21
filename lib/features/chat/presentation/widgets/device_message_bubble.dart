@@ -24,6 +24,7 @@ class DeviceMessageBubble extends StatelessWidget {
             ),
           ),
         ),
+        const SizedBox(height: 5),
       ],
     );
   }
