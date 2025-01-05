@@ -17,7 +17,6 @@ GuardianArea es una aplicación móvil diseñada para mejorar la seguridad y el 
 - Riverpod para gestión de estado
 - Google Maps API para geolocalización
 - Firebase para backend y notificaciones
-- SQLite para almacenamiento local
 
 ## 📁 Estructura del Proyecto
 
